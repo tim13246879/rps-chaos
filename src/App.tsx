@@ -174,7 +174,7 @@ export default function App() {
       <CountdownOverlay {...countdownOverlay} />
       <header className="app-header">
         <div>
-          <h1>Rock Paper Scissor Chaos</h1>
+          <h1>RPS Chaos</h1>
           <p>Webcam hand tracking that predicts the reveal and plays the winning counter.</p>
         </div>
         <div className="app-header__meta">

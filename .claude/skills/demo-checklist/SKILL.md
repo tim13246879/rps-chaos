@@ -1,6 +1,6 @@
 ---
 name: demo-checklist
-description: Pre-demo sanity checklist for RPS Oracle before showing it to someone live (judges, teammates, an audience). Use whenever asked to prep for, rehearse, or sanity-check a live demo of this app.
+description: Pre-demo sanity checklist for RPS Chaos before showing it to someone live (judges, teammates, an audience). Use whenever asked to prep for, rehearse, or sanity-check a live demo of this app.
 ---
 
 # Demo checklist

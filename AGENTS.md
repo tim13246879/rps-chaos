@@ -4,7 +4,7 @@ Instructions for any coding agent (Claude Code, Codex, Devin, etc.) working in t
 
 ## Project summary
 
-RPS Oracle is a browser-based rock-paper-scissors "oracle": it watches your webcam during a 3-2-1-SHOOT countdown, predicts which gesture you're about to throw, and displays the winning counter move before you finish revealing it. No server, no trained ML model — hand-tracking comes from MediaPipe Tasks Vision, and gesture recognition is a hand-tuned heuristic scorer over finger-extension features.
+RPS Chaos is a browser-based rock-paper-scissors "oracle": it watches your webcam during a 3-2-1-SHOOT countdown, predicts which gesture you're about to throw, and displays the winning counter move before you finish revealing it. No server, no trained ML model — hand-tracking comes from MediaPipe Tasks Vision, and gesture recognition is a hand-tuned heuristic scorer over finger-extension features.
 
 ## Commands
 
@@ -74,6 +74,6 @@ The substance lives in plain markdown so any agent gets it, regardless of whethe
 - [`docs/architecture.md`](docs/architecture.md) — full data-flow and state-machine walkthrough.
 - [`docs/operations.md`](docs/operations.md) — running the app, tuning the gesture classifier, and a pre-demo checklist.
 
-Claude Code additionally gets these as invokable skills (`.claude/skills/run-rps-oracle/`, `.claude/skills/tune-gesture-classifier/`, `.claude/skills/demo-checklist/`) that just point back at `docs/operations.md` — that's Claude-Code-specific plumbing, not a second copy of the content. If you're Codex or another AGENTS.md-reading agent without a skills mechanism, just read the two docs above directly.
+Claude Code additionally gets these as invokable skills (`.claude/skills/run-rps-chaos/`, `.claude/skills/tune-gesture-classifier/`, `.claude/skills/demo-checklist/`) that just point back at `docs/operations.md` — that's Claude-Code-specific plumbing, not a second copy of the content. If you're Codex or another AGENTS.md-reading agent without a skills mechanism, just read the two docs above directly.
 
 There's also `.claude/skills/devin-handoff/` — how to scope a task and hand it off to Devin (Cognition's AI engineer) via CLI/web session instead of implementing it directly. That one's inherently Claude-Code/session-specific (it's about *this* conversation's workflow, not the app), so it isn't mirrored into `docs/`.

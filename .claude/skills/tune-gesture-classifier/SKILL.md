@@ -1,6 +1,6 @@
 ---
 name: tune-gesture-classifier
-description: Adjust rock/paper/scissors gesture detection or round-lock timing in RPS Oracle — use when a gesture is misclassified, a prediction locks too early/late/unreliably, or confidence/margin thresholds need retuning. Covers src/vision/classifier.ts and src/game/round.ts.
+description: Adjust rock/paper/scissors gesture detection or round-lock timing in RPS Chaos — use when a gesture is misclassified, a prediction locks too early/late/unreliably, or confidence/margin thresholds need retuning. Covers src/vision/classifier.ts and src/game/round.ts.
 ---
 
 # Tune the gesture classifier
@@ -9,4 +9,4 @@ Full workflow lives in [`docs/operations.md`](../../../docs/operations.md#tuning
 
 That doc is tool-agnostic (also followed by Codex and other agents via `AGENTS.md`) — update it there rather than duplicating content here.
 
-Use the `run-rps-oracle` skill to reproduce and re-verify live.
+Use the `run-rps-chaos` skill to reproduce and re-verify live.
