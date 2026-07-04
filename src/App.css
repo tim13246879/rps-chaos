@@ -79,6 +79,22 @@ button {
   overflow: hidden;
 }
 
+.app-shell--player {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.app-shell--player .app-header {
+  margin-bottom: 14px;
+}
+
+.app-shell--player .app-header h1 {
+  font-size: clamp(2rem, 4vw, 3.1rem);
+}
+
 .app-header {
   flex: 0 0 auto;
   display: flex;
@@ -119,6 +135,24 @@ button {
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
+}
+
+.mode-toggle {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 999px;
+  padding: 8px 11px;
+  background: rgba(15, 23, 42, 0.6);
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.mode-toggle--active {
+  border-color: rgba(245, 158, 11, 0.7);
+  background: rgba(245, 158, 11, 0.16);
+  color: #fed7aa;
 }
 
 .app-layout {
@@ -222,6 +256,118 @@ button {
   font-weight: 800;
 }
 
+.player-stage {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  flex: 1;
+  gap: 14px;
+  min-height: 0;
+}
+
+.player-stage__arena {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(250px, 0.65fr);
+  gap: 14px;
+  min-height: 0;
+}
+
+.player-stage__camera,
+.player-stage__move {
+  min-width: 0;
+  min-height: 0;
+}
+
+.player-stage__camera .camera-panel,
+.player-stage__camera .camera-shell {
+  height: 100%;
+}
+
+.player-stage__camera .camera-shell {
+  aspect-ratio: auto;
+}
+
+.player-stage__move {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 14px;
+  border: 1px solid rgba(34, 211, 238, 0.26);
+  border-radius: 8px;
+  padding: clamp(18px, 4vw, 44px);
+  background: rgba(8, 47, 73, 0.34);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+}
+
+.player-stage__move--locked {
+  border-color: rgba(245, 158, 11, 0.62);
+  background: rgba(69, 26, 3, 0.44);
+}
+
+.player-stage__move span {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.player-stage__move .move-glyph--large {
+  width: min(26vw, 220px);
+  height: min(26vw, 220px);
+}
+
+.player-stage__move strong {
+  color: #f8fafc;
+  font-size: clamp(2.2rem, 5vw, 5rem);
+  line-height: 0.95;
+}
+
+.player-stage__actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+}
+
+.player-stage__button {
+  min-width: min(100%, 260px);
+  min-height: 48px;
+  font-size: 1rem;
+}
+
+.player-stage__ghost-button {
+  min-height: 48px;
+  border-color: rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.54);
+  color: #94a3b8;
+}
+
+@media (max-height: 760px) and (min-width: 981px) {
+  .app-shell--player {
+    padding: 14px 22px;
+  }
+
+  .app-shell--player .app-header {
+    margin-bottom: 10px;
+  }
+
+  .app-shell--player .app-header h1 {
+    font-size: clamp(2rem, 3.4vw, 2.8rem);
+  }
+
+  .player-stage {
+    gap: 10px;
+  }
+
+  .player-stage__arena {
+    gap: 10px;
+  }
+}
+
+.player-stage__error {
+  justify-self: center;
+  width: min(100%, 680px);
+}
+
 .prediction-panel {
   gap: 8px;
   border-radius: 8px;
@@ -284,16 +430,16 @@ button {
   font-size: clamp(9rem, 42vw, 34rem);
   font-weight: 950;
   line-height: 0.8;
-  letter-spacing: -0.04em;
-  color: rgba(244, 247, 251, 0.42);
+  letter-spacing: 0;
+  color: rgba(244, 247, 251, 0.72);
   text-shadow: 0 0 70px rgba(34, 211, 238, 0.3);
   animation: countdown-pop 240ms cubic-bezier(0.2, 0.9, 0.25, 1);
 }
 
 .countdown-overlay__value--shoot {
   font-size: clamp(4.5rem, 22vw, 16rem);
-  letter-spacing: 0.04em;
-  color: rgba(245, 158, 11, 0.62);
+  letter-spacing: 0;
+  color: rgba(245, 158, 11, 0.82);
   text-shadow: 0 0 80px rgba(245, 158, 11, 0.4);
 }
 
@@ -527,8 +673,29 @@ button {
     justify-content: flex-start;
   }
 
+  .app-shell--player {
+    overflow: visible;
+  }
+
   .app-layout {
     display: block;
+  }
+
+  .player-stage {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .player-stage__arena {
+    grid-template-columns: 1fr;
+  }
+
+  .player-stage__camera .camera-panel,
+  .player-stage__camera .camera-shell {
+    height: auto;
+  }
+
+  .player-stage__camera .camera-shell {
+    aspect-ratio: 16 / 9;
   }
 
   .camera-panel,
@@ -552,6 +719,27 @@ button {
 
   .camera-metrics,
   .move-grid,
+  .prediction-panel,
+  .controls,
+  .player-stage__actions {
+    grid-template-columns: 1fr;
+  }
+
+  .player-stage__actions {
+    display: grid;
+  }
+
+  .player-stage__move .move-glyph--large {
+    width: min(52vw, 180px);
+    height: min(52vw, 180px);
+  }
+
+  .counter-card,
+  .history,
+  .controls,
+  .error-box {
+    grid-column: auto;
+  }
   .controls {
     grid-template-columns: 1fr;
   }

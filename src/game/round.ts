@@ -156,3 +156,11 @@ export function getMachineStatus(
 
   return "Reading gesture";
 }
+
+export function getPlayerCounterMove(phase: RoundPhase, counterMove: Move): Move {
+  if (phase === "shoot" || phase === "result") {
+    return counterMove;
+  }
+
+  return "unknown";
+}
