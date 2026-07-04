@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CameraPanel } from "./components/CameraPanel";
 import { PredictionPanel } from "./components/PredictionPanel";
-import { createCountdownAudioPlayer, type CountdownAudioPlayer } from "./countdownAudio";
+import {
+  COUNTDOWN_AUDIO_LEAD_MS,
+  createCountdownAudioPlayer,
+  type CountdownAudioPlayer,
+} from "./countdownAudio";
 import { getCounterMove } from "./game/moves";
 import {
   getMachineStatus,
@@ -82,7 +86,7 @@ export default function App() {
     setLockedPrediction(null);
     setLockedAtMs(null);
     setLowConfidence(false);
-    setRoundStartedAt(performance.now());
+    setRoundStartedAt(performance.now() + COUNTDOWN_AUDIO_LEAD_MS);
   }, [snapshot.cameraReady]);
 
   const lockPrediction = useCallback(

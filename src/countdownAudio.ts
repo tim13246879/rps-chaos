@@ -4,6 +4,7 @@ const COUNTDOWN_BEEP_SECONDS = 0.09;
 const SHOOT_BEEP_SECONDS = 0.16;
 const BEEP_VOLUME = 0.16;
 const AUDIO_START_DELAY_SECONDS = 0.03;
+export const COUNTDOWN_AUDIO_LEAD_MS = 250;
 
 type AudioContextConstructor = typeof AudioContext;
 
