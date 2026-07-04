@@ -51,7 +51,6 @@ export function PredictionPanel({
 
       <div className="countdown-box">
         <div className="countdown-box__label">Round timer</div>
-        <div className="countdown-box__value">{clock.label}</div>
         <div className="timer-track">
           <div style={{ width: `${clock.progress * 100}%` }} />
         </div>
