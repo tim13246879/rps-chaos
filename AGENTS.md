@@ -63,9 +63,9 @@ See [`docs/architecture.md`](docs/architecture.md) for the full data-flow walkth
 
 `npm test` and `npm run build` catch logic and type regressions, but they can't prove gesture detection or camera behavior actually works — that only happens in a real browser with a real webcam. **Do not run `npm run dev` yourself** — the agent doesn't have a real browser/webcam to drive it with, so the dev server is the user's to own. For any change touching `vision/`, `game/round.ts`, or the components, ask the user to run `npm run dev` and walk through the flow themselves: enable camera → calibrate → start a round → confirm the right counter move locks in. See [`docs/operations.md`](docs/operations.md#running-the-app).
 
-## Branches and worktrees
+## Branches
 
-Feature work happens on a branch in its own `git worktree` (sibling directory to the main checkout), not directly on `main`. Once a branch's PR is merged, delete both the worktree and the branch — `git worktree remove <path>` then `git branch -d <branch>` (add `git push origin --delete <branch>` if it was pushed). Don't leave merged worktrees/branches lying around; check `git worktree list` and prune anything tied to a merged PR before starting new work.
+Feature work happens on a branch off `main`, checked out directly in this working copy — not directly on `main`, and no separate `git worktree` needed. Once a branch's PR is merged, delete it — `git branch -d <branch>` (add `git push origin --delete <branch>` if it was pushed). Don't leave merged branches lying around; check `git branch` and prune anything tied to a merged PR before starting new work.
 
 ## Docs and tool-specific wrappers
 
