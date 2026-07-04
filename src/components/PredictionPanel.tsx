@@ -16,7 +16,7 @@ interface PredictionPanelProps {
   modelReady: boolean;
   cameraReady: boolean;
   error: string | null;
-  onEnableCamera: () => void;
+  onToggleCamera: () => void;
   onStartRound: () => void;
   onCalibrate: () => void;
   onTogglePractice: () => void;
@@ -35,7 +35,7 @@ export function PredictionPanel({
   modelReady,
   cameraReady,
   error,
-  onEnableCamera,
+  onToggleCamera,
   onStartRound,
   onCalibrate,
   onTogglePractice,
@@ -80,8 +80,12 @@ export function PredictionPanel({
       </div>
 
       <div className="controls">
-        <button type="button" className="button button--primary" onClick={onEnableCamera} disabled={cameraReady}>
-          {modelReady ? "Enable camera" : "Load model + camera"}
+        <button
+          type="button"
+          className={`button ${cameraReady ? "button--danger" : "button--primary"}`}
+          onClick={onToggleCamera}
+        >
+          {cameraReady ? "Stop camera" : modelReady ? "Start camera" : "Load model + camera"}
         </button>
         <button type="button" className="button" onClick={onStartRound} disabled={!cameraReady}>
           Start round

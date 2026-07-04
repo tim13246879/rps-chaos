@@ -44,7 +44,7 @@ function makeRoundRecord(
 }
 
 export default function App() {
-  const { videoRef, canvasRef, snapshot, enableCamera, calibrate } = useHandVision();
+  const { videoRef, canvasRef, snapshot, enableCamera, stopCamera, calibrate } = useHandVision();
   const [roundStartedAt, setRoundStartedAt] = useState<number | null>(null);
   const [clockNow, setClockNow] = useState(() => performance.now());
   const [lockedPrediction, setLockedPrediction] = useState<PredictionResult | null>(null);
@@ -66,6 +66,19 @@ export default function App() {
   const status = snapshot.cameraReady
     ? getMachineStatus(roundClock.phase, lockedMove, snapshot.handVisible)
     : "Camera standby";
+
+  const toggleCamera = useCallback(() => {
+    if (snapshot.cameraReady) {
+      stopCamera();
+      setRoundStartedAt(null);
+      setLockedPrediction(null);
+      setLockedAtMs(null);
+      setLowConfidence(false);
+      return;
+    }
+
+    void enableCamera();
+  }, [enableCamera, snapshot.cameraReady, stopCamera]);
 
   const startRound = useCallback(() => {
     if (!snapshot.cameraReady) {
@@ -161,7 +174,7 @@ export default function App() {
           modelReady={snapshot.modelReady}
           cameraReady={snapshot.cameraReady}
           error={snapshot.error}
-          onEnableCamera={enableCamera}
+          onToggleCamera={toggleCamera}
           onStartRound={startRound}
           onCalibrate={calibrate}
           onTogglePractice={() => setPracticeMode((current) => !current)}
