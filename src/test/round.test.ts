@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   COUNTDOWN_MS,
+  COUNTDOWN_OVERLAY_END_MS,
+  getCountdownOverlay,
   getRoundClock,
   getRoundLabel,
   getRoundPhase,
@@ -37,6 +39,24 @@ describe("round clock", () => {
 
     expect(clock.isPredictionWindow).toBe(true);
     expect(getRoundPhase(COUNTDOWN_MS + 50)).toBe("shoot");
+  });
+});
+
+describe("countdown overlay", () => {
+  it("is hidden until a round starts", () => {
+    expect(getCountdownOverlay(null, 1000).visible).toBe(false);
+  });
+
+  it("counts 3-2-1 then SHOOT with a stable step per value", () => {
+    expect(getCountdownOverlay(0, 0)).toMatchObject({ visible: true, value: "3", step: 0, isShoot: false });
+    expect(getCountdownOverlay(0, 1100)).toMatchObject({ value: "2", step: 1, isShoot: false });
+    expect(getCountdownOverlay(0, 2100)).toMatchObject({ value: "1", step: 2, isShoot: false });
+    expect(getCountdownOverlay(0, COUNTDOWN_MS)).toMatchObject({ value: "SHOOT", step: 3, isShoot: true });
+  });
+
+  it("hides after the shoot hold window", () => {
+    expect(getCountdownOverlay(0, COUNTDOWN_OVERLAY_END_MS - 1).visible).toBe(true);
+    expect(getCountdownOverlay(0, COUNTDOWN_OVERLAY_END_MS).visible).toBe(false);
   });
 });
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CameraPanel } from "./components/CameraPanel";
+import { CountdownOverlay } from "./components/CountdownOverlay";
 import { PredictionPanel } from "./components/PredictionPanel";
 import {
   COUNTDOWN_AUDIO_LEAD_MS,
@@ -8,6 +9,7 @@ import {
 } from "./countdownAudio";
 import { getCounterMove } from "./game/moves";
 import {
+  getCountdownOverlay,
   getMachineStatus,
   getRoundClock,
   isLowConfidenceLock,
@@ -63,6 +65,14 @@ export default function App() {
 
   const roundClock: RoundClock = useMemo(
     () => getRoundClock(roundStartedAt, clockNow),
+    [clockNow, roundStartedAt],
+  );
+  const countdownOverlay = useMemo(
+    () =>
+      getCountdownOverlay(
+        roundStartedAt === null ? null : roundStartedAt - COUNTDOWN_AUDIO_LEAD_MS,
+        clockNow,
+      ),
     [clockNow, roundStartedAt],
   );
   const activePrediction = snapshot.prediction ?? UNKNOWN_PREDICTION;
@@ -161,9 +171,10 @@ export default function App() {
 
   return (
     <main className="app-shell">
+      <CountdownOverlay {...countdownOverlay} />
       <header className="app-header">
         <div>
-          <h1>RPS Oracle</h1>
+          <h1>Rock Paper Scissor Chaos</h1>
           <p>Webcam hand tracking that predicts the reveal and plays the winning counter.</p>
         </div>
         <div className="app-header__meta">

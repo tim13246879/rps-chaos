@@ -4,6 +4,7 @@ export const COUNTDOWN_MS = 3000;
 export const PREDICTION_WINDOW_START_MS = COUNTDOWN_MS - 350;
 export const PREDICTION_WINDOW_END_MS = COUNTDOWN_MS + 100;
 export const RESULT_HOLD_MS = 1100;
+export const COUNTDOWN_OVERLAY_END_MS = COUNTDOWN_MS + 700;
 export const LOCK_CONFIDENCE = 0.62;
 export const LOCK_MARGIN = 0.12;
 export const LOCK_STABLE_FRAMES = 2;
@@ -70,6 +71,30 @@ export function getRoundLabel(elapsedMs: number): string {
   }
 
   return "SHOOT";
+}
+
+export interface CountdownOverlayState {
+  visible: boolean;
+  value: string;
+  step: number;
+  isShoot: boolean;
+}
+
+export function getCountdownOverlay(startedAt: number | null, now: number): CountdownOverlayState {
+  if (startedAt === null) {
+    return { visible: false, value: "", step: -1, isShoot: false };
+  }
+
+  const elapsedMs = Math.max(0, now - startedAt);
+
+  if (elapsedMs >= COUNTDOWN_OVERLAY_END_MS) {
+    return { visible: false, value: "", step: -1, isShoot: false };
+  }
+
+  const value = getRoundLabel(elapsedMs);
+  const step = elapsedMs < COUNTDOWN_MS ? Math.floor(elapsedMs / 1000) : 3;
+
+  return { visible: true, value, step, isShoot: elapsedMs >= COUNTDOWN_MS };
 }
 
 export function shouldLockPrediction(prediction: PredictionResult): boolean {
