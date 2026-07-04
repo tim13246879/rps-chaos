@@ -23,3 +23,7 @@ npm run build
 - Webcam access runs locally in the browser through `getUserMedia`.
 - Hand landmarks come from MediaPipe Tasks Vision.
 - The first version uses rule-based gesture scoring instead of a trained custom model.
+
+## For agents / contributors
+
+See [`AGENTS.md`](AGENTS.md) for architecture, conventions, and verification guidance, and [`docs/`](docs/) for a deeper data-flow walkthrough and operational runbooks (running, tuning detection, demo prep).
