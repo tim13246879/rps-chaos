@@ -21,6 +21,8 @@ There is no lint script and no linter config in this repo — don't add one unle
 
 ```
 src/
+  config/
+    weights.ts        # ClassifierWeights + DEFAULT_WEIGHTS: tunable gesture/lock config
   vision/
     landmarks.ts     # raw MediaPipe landmarks -> FrameFeatures (pure)
     classifier.ts     # FrameFeatures -> PredictionResult (pure, hand-tuned heuristics)
@@ -33,6 +35,7 @@ src/
   components/
     CameraPanel.tsx    # video + landmark overlay + live confidence/margin readout
     PredictionPanel.tsx # controls, countdown, locked counter move, round history
+    LabelingPanel.tsx   # dev-only ground-truth gesture labeling UI
     MoveGlyph.tsx
   types.ts             # shared contracts (Move, FrameFeatures, PredictionResult, ...)
   App.tsx              # orchestrates round state, wires vision snapshot to the panels
@@ -41,7 +44,7 @@ src/
 
 The load-bearing design decision: **all gesture-scoring and timing logic is pure functions in `vision/` and `game/`, isolated from the one stateful hook that touches the camera.** That's what makes `npm test` able to cover gesture detection and round timing without mocking `getUserMedia` or MediaPipe. Keep new logic in this shape — if you're adding detection or timing behavior, it should be a pure function with a unit test, not inline in `useHandVision.ts` or `App.tsx`.
 
-Key tunable constants live in `src/game/round.ts` (`LOCK_CONFIDENCE`, `LOCK_MARGIN`, `LOCK_STABLE_FRAMES`, `COUNTDOWN_MS`, prediction window) and as inline weights in `src/vision/classifier.ts`'s `scoreFromFeatures`.
+Key tunable gesture and lock weights live in `src/config/weights.ts` as `DEFAULT_WEIGHTS`; round-pacing constants (`COUNTDOWN_MS`, prediction window start/end) remain in `src/game/round.ts`. A dev-only **labeling mode** in the UI records ground-truth `LabeledSample`s for classifier tuning — see [`docs/operations.md`](docs/operations.md#labeling-gesture-samples).
 
 See [`docs/architecture.md`](docs/architecture.md) for the full data-flow walkthrough.
 

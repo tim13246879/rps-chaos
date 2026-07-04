@@ -1,12 +1,10 @@
+import { DEFAULT_WEIGHTS, type ClassifierWeights } from "../config/weights";
 import type { Move, PredictionResult, RoundPhase } from "../types";
 
 export const COUNTDOWN_MS = 3000;
 export const PREDICTION_WINDOW_START_MS = COUNTDOWN_MS - 350;
 export const PREDICTION_WINDOW_END_MS = COUNTDOWN_MS + 100;
 export const RESULT_HOLD_MS = 1100;
-export const LOCK_CONFIDENCE = 0.62;
-export const LOCK_MARGIN = 0.12;
-export const LOCK_STABLE_FRAMES = 2;
 
 export interface RoundClock {
   elapsedMs: number;
@@ -72,12 +70,15 @@ export function getRoundLabel(elapsedMs: number): string {
   return "SHOOT";
 }
 
-export function shouldLockPrediction(prediction: PredictionResult): boolean {
+export function shouldLockPrediction(
+  prediction: PredictionResult,
+  weights: ClassifierWeights = DEFAULT_WEIGHTS,
+): boolean {
   return (
     prediction.move !== "unknown" &&
-    prediction.confidence >= LOCK_CONFIDENCE &&
-    prediction.margin >= LOCK_MARGIN &&
-    prediction.stableFrames >= LOCK_STABLE_FRAMES
+    prediction.confidence >= weights.lock.confidence &&
+    prediction.margin >= weights.lock.margin &&
+    prediction.stableFrames >= weights.lock.stableFrames
   );
 }
 
@@ -104,8 +105,11 @@ export function pickBetterPrediction(
   return currentBest;
 }
 
-export function isLowConfidenceLock(prediction: PredictionResult): boolean {
-  return prediction.move === "unknown" || !shouldLockPrediction(prediction);
+export function isLowConfidenceLock(
+  prediction: PredictionResult,
+  weights: ClassifierWeights = DEFAULT_WEIGHTS,
+): boolean {
+  return prediction.move === "unknown" || !shouldLockPrediction(prediction, weights);
 }
 
 export function getMachineStatus(

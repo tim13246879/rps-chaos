@@ -30,7 +30,7 @@ Devin's own guidance: pick something with **clear success criteria** and **under
 - Add a win-streak counter or scoreboard to `PredictionPanel`.
 - Add a sound/visual effect on a clean lock.
 - Add more edge-case coverage to `src/test/classifier.test.ts` or `round.test.ts`.
-- A settings panel exposing `LOCK_CONFIDENCE`/`LOCK_MARGIN` as adjustable values.
+- A settings panel exposing `DEFAULT_WEIGHTS.lock` thresholds in `src/config/weights.ts` as adjustable values.
 
 Bad candidates: anything requiring a live webcam to iterate on tuning (see `docs/operations.md#tuning-the-gesture-classifier` — that's a fast local feedback loop, not a good Devin task), or anything needing back-and-forth design judgment better suited to this conversation.
 

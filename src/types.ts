@@ -42,3 +42,13 @@ export interface RoundRecord {
   lowConfidence: boolean;
   createdAt: number;
 }
+
+export interface LabeledSample {
+  id: string;
+  timestamp: number;
+  features: FrameFeatures;
+  predictedMove: Move;
+  predictedConfidence: number;
+  predictedMargin: number;
+  userLabel: Move;
+}

@@ -13,6 +13,7 @@ interface PredictionPanelProps {
   lowConfidence: boolean;
   history: RoundRecord[];
   practiceMode: boolean;
+  labelingMode: boolean;
   modelReady: boolean;
   cameraReady: boolean;
   error: string | null;
@@ -20,6 +21,7 @@ interface PredictionPanelProps {
   onStartRound: () => void;
   onCalibrate: () => void;
   onTogglePractice: () => void;
+  onToggleLabeling: () => void;
 }
 
 export function PredictionPanel({
@@ -32,6 +34,7 @@ export function PredictionPanel({
   lowConfidence,
   history,
   practiceMode,
+  labelingMode,
   modelReady,
   cameraReady,
   error,
@@ -39,6 +42,7 @@ export function PredictionPanel({
   onStartRound,
   onCalibrate,
   onTogglePractice,
+  onToggleLabeling,
 }: PredictionPanelProps) {
   const displayedUserMove = lockedMove === "unknown" ? prediction.move : lockedMove;
 
@@ -95,6 +99,13 @@ export function PredictionPanel({
           onClick={onTogglePractice}
         >
           Practice mode
+        </button>
+        <button
+          type="button"
+          className={`button ${labelingMode ? "button--active" : ""}`}
+          onClick={onToggleLabeling}
+        >
+          Labeling mode
         </button>
       </div>
 

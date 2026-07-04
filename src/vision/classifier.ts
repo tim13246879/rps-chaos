@@ -1,4 +1,5 @@
 import type { FrameFeatures, Move, PredictionResult } from "../types";
+import { DEFAULT_WEIGHTS, type ClassifierWeights } from "../config/weights";
 
 const UNKNOWN_SCORES: Record<Move, number> = {
   rock: 0,
@@ -49,7 +50,10 @@ function topMove(scores: Record<Move, number>): { move: Move; confidence: number
   };
 }
 
-export function scoreFromFeatures(features: FrameFeatures): Record<Move, number> {
+export function scoreFromFeatures(
+  features: FrameFeatures,
+  weights: ClassifierWeights = DEFAULT_WEIGHTS,
+): Record<Move, number> {
   const { index, middle, ring, pinky } = features.fingerExtensions;
   const allAverage = average([index, middle, ring, pinky]);
   const closedAverage = average([1 - index, 1 - middle, 1 - ring, 1 - pinky]);
@@ -58,45 +62,50 @@ export function scoreFromFeatures(features: FrameFeatures): Record<Move, number>
   const allClosedMin = Math.min(1 - index, 1 - middle, 1 - ring, 1 - pinky);
   const scissorsOpen = average([index, middle]);
   const scissorsClosed = average([1 - ring, 1 - pinky]);
-  const scissorsSpread = clamp01((features.scissorsSpread - 0.12) / 0.34);
+  const scissorsSpread = clamp01(
+    (features.scissorsSpread - weights.scissors.spreadTarget) / weights.scissors.spreadTolerance,
+  );
   const velocity = features.averageFingerVelocity;
-  const openingBoost = clamp01(velocity / 2.4) * 0.08;
-  const closingBoost = clamp01(-velocity / 2.4) * 0.08;
+  const openingBoost = clamp01(velocity / weights.velocity.divisor) * weights.velocity.boostWeight;
+  const closingBoost = clamp01(-velocity / weights.velocity.divisor) * weights.velocity.boostWeight;
 
   const rock = clamp01(
-    (closedAverage * 0.45 + allClosedMin * 0.55) * (1 - maxOpen * 0.35) +
+    (closedAverage * weights.rock.closedAverageWeight + allClosedMin * weights.rock.allClosedMinWeight) *
+      (1 - maxOpen * weights.rock.maxOpenPenalty) +
       average([
-        closeness(index, 0.08, 0.42),
-        closeness(middle, 0.08, 0.42),
-        closeness(ring, 0.08, 0.42),
-        closeness(pinky, 0.08, 0.42),
+        closeness(index, weights.rock.fingerTargets.target, weights.rock.fingerTargets.tolerance),
+        closeness(middle, weights.rock.fingerTargets.target, weights.rock.fingerTargets.tolerance),
+        closeness(ring, weights.rock.fingerTargets.target, weights.rock.fingerTargets.tolerance),
+        closeness(pinky, weights.rock.fingerTargets.target, weights.rock.fingerTargets.tolerance),
       ]) *
-        0.1 +
+        weights.rock.fingerTargetWeight +
       closingBoost,
   );
 
   const paper = clamp01(
-    (allAverage * 0.3 + minOpen * 0.7) * 1.18 +
+    (allAverage * weights.paper.allAverageWeight + minOpen * weights.paper.minOpenWeight) *
+      weights.paper.scale +
       average([
-        closeness(index, 0.9, 0.45),
-        closeness(middle, 0.9, 0.45),
-        closeness(ring, 0.82, 0.48),
-        closeness(pinky, 0.78, 0.52),
+        closeness(index, weights.paper.fingerTargets.index.target, weights.paper.fingerTargets.index.tolerance),
+        closeness(middle, weights.paper.fingerTargets.middle.target, weights.paper.fingerTargets.middle.tolerance),
+        closeness(ring, weights.paper.fingerTargets.ring.target, weights.paper.fingerTargets.ring.tolerance),
+        closeness(pinky, weights.paper.fingerTargets.pinky.target, weights.paper.fingerTargets.pinky.tolerance),
       ]) *
-        0.08 +
+        weights.paper.fingerTargetWeight +
       openingBoost,
   );
 
   const scissors = clamp01(
-    scissorsOpen * 0.3 +
-      scissorsClosed * 0.3 +
-      Math.min(index, middle) * 0.16 +
-      Math.min(1 - ring, 1 - pinky) * 0.16 +
-      scissorsSpread * 0.18 +
-      openingBoost * 0.4,
+    scissorsOpen * weights.scissors.openWeight +
+      scissorsClosed * weights.scissors.closedWeight +
+      Math.min(index, middle) * weights.scissors.minOpenPairWeight +
+      Math.min(1 - ring, 1 - pinky) * weights.scissors.minClosedPairWeight +
+      scissorsSpread * weights.scissors.spreadWeight +
+      openingBoost * weights.scissors.openingBoostWeight,
   );
 
-  const ambiguity = 0.18 + clamp01(0.18 - Math.max(rock, paper, scissors) * 0.18);
+  const ambiguity =
+    weights.ambiguity.base + clamp01(weights.ambiguity.scale - Math.max(rock, paper, scissors) * weights.ambiguity.scale);
 
   return normalizeScores({
     rock,
@@ -106,11 +115,14 @@ export function scoreFromFeatures(features: FrameFeatures): Record<Move, number>
   });
 }
 
-export function classifyFeatures(features: FrameFeatures): PredictionResult {
-  const scores = scoreFromFeatures(features);
+export function classifyFeatures(
+  features: FrameFeatures,
+  weights: ClassifierWeights = DEFAULT_WEIGHTS,
+): PredictionResult {
+  const scores = scoreFromFeatures(features, weights);
   const top = topMove(scores);
 
-  if (top.confidence < 0.36 || top.margin < 0.04) {
+  if (top.confidence < weights.unknownThresholds.minConfidence || top.margin < weights.unknownThresholds.minMargin) {
     return {
       move: "unknown",
       confidence: top.confidence,
@@ -127,8 +139,11 @@ export function classifyFeatures(features: FrameFeatures): PredictionResult {
   };
 }
 
-export function classifySequence(history: FrameFeatures[]): PredictionResult {
-  const recent = history.slice(-6);
+export function classifySequence(
+  history: FrameFeatures[],
+  weights: ClassifierWeights = DEFAULT_WEIGHTS,
+): PredictionResult {
+  const recent = history.slice(-weights.sequence.windowSize);
 
   if (recent.length === 0) {
     return {
@@ -143,7 +158,7 @@ export function classifySequence(history: FrameFeatures[]): PredictionResult {
   const weighted = recent.reduce<Record<Move, number>>(
     (scores, frame, index) => {
       const weight = index + 1;
-      const frameScores = scoreFromFeatures(frame);
+      const frameScores = scoreFromFeatures(frame, weights);
       scores.rock += frameScores.rock * weight;
       scores.paper += frameScores.paper * weight;
       scores.scissors += frameScores.scissors * weight;
@@ -154,7 +169,7 @@ export function classifySequence(history: FrameFeatures[]): PredictionResult {
   );
   const scores = normalizeScores(weighted);
   const top = topMove(scores);
-  const trailingMoves = recent.map(classifyFeatures).map((prediction) => prediction.move);
+  const trailingMoves = recent.map((frame) => classifyFeatures(frame, weights)).map((prediction) => prediction.move);
   let stableFrames = 0;
 
   for (let index = trailingMoves.length - 1; index >= 0; index -= 1) {
@@ -165,7 +180,7 @@ export function classifySequence(history: FrameFeatures[]): PredictionResult {
     stableFrames += 1;
   }
 
-  if (top.confidence < 0.36 || top.margin < 0.04) {
+  if (top.confidence < weights.unknownThresholds.minConfidence || top.margin < weights.unknownThresholds.minMargin) {
     return {
       move: "unknown",
       confidence: top.confidence,

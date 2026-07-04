@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CameraPanel } from "./components/CameraPanel";
+import { LabelingPanel } from "./components/LabelingPanel";
 import { PredictionPanel } from "./components/PredictionPanel";
 import { getCounterMove } from "./game/moves";
 import {
@@ -11,7 +12,7 @@ import {
   shouldLockPrediction,
   type RoundClock,
 } from "./game/round";
-import type { Move, PredictionResult, RoundRecord } from "./types";
+import type { LabeledSample, Move, PredictionResult, RoundRecord } from "./types";
 import { useHandVision } from "./vision/useHandVision";
 
 const UNKNOWN_PREDICTION: PredictionResult = {
@@ -52,6 +53,8 @@ export default function App() {
   const [lowConfidence, setLowConfidence] = useState(false);
   const [history, setHistory] = useState<RoundRecord[]>([]);
   const [practiceMode, setPracticeMode] = useState(false);
+  const [labelingMode, setLabelingMode] = useState(false);
+  const [labeledSamples, setLabeledSamples] = useState<LabeledSample[]>([]);
   const bestLatePredictionRef = useRef<PredictionResult | null>(null);
   const recordedRoundRef = useRef(false);
 
@@ -95,6 +98,39 @@ export default function App() {
     },
     [],
   );
+
+  const recordLabel = useCallback(
+    (label: Move) => {
+      if (!snapshot.features || !snapshot.prediction) {
+        return;
+      }
+
+      const sample: LabeledSample = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        timestamp: Date.now(),
+        features: snapshot.features,
+        predictedMove: snapshot.prediction.move,
+        predictedConfidence: snapshot.prediction.confidence,
+        predictedMargin: snapshot.prediction.margin,
+        userLabel: label,
+      };
+
+      setLabeledSamples((current) => [...current, sample]);
+    },
+    [snapshot.features, snapshot.prediction],
+  );
+
+  const exportLabeledSamples = useCallback(() => {
+    const blob = new Blob([JSON.stringify(labeledSamples, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `rps-labeled-samples-${Date.now()}.json`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  }, [labeledSamples]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setClockNow(performance.now()), 50);
@@ -158,6 +194,7 @@ export default function App() {
           lowConfidence={lowConfidence}
           history={history}
           practiceMode={practiceMode}
+          labelingMode={labelingMode}
           modelReady={snapshot.modelReady}
           cameraReady={snapshot.cameraReady}
           error={snapshot.error}
@@ -165,7 +202,15 @@ export default function App() {
           onStartRound={startRound}
           onCalibrate={calibrate}
           onTogglePractice={() => setPracticeMode((current) => !current)}
+          onToggleLabeling={() => setLabelingMode((current) => !current)}
         />
+        {labelingMode && (
+          <LabelingPanel
+            sampleCount={labeledSamples.length}
+            onLabel={recordLabel}
+            onExport={exportLabeledSamples}
+          />
+        )}
       </div>
     </main>
   );

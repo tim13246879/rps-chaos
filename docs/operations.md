@@ -24,18 +24,30 @@ When verifying a change: for `src/vision/` or `src/game/round.ts` edits, re-run 
 Detection is a hand-tuned heuristic scorer, not a trained model — there's no training data to fix, only weights and thresholds in two files.
 
 - `src/vision/landmarks.ts` — turns raw MediaPipe landmarks into `FrameFeatures` (per-finger extension 0-1, per-finger angle, scissors spread, average finger velocity). Only touch this if a *feature itself* is unreliable — changes here affect every downstream score.
-- `src/vision/classifier.ts` — `scoreFromFeatures` computes rock/paper/scissors/unknown scores from those features using hand-picked weights and `closeness()` targets. `classifySequence` weights the last few frames and requires a confidence/margin floor (`0.36` / `0.04`) before returning anything other than `"unknown"`.
-- `src/game/round.ts` — separate from scoring: `LOCK_CONFIDENCE` (0.62), `LOCK_MARGIN` (0.12), and `LOCK_STABLE_FRAMES` (2) decide whether a prediction is trustworthy enough to lock in as the round's answer. `shouldLockPrediction` and `isLowConfidenceLock` are the gate.
+- `src/config/weights.ts` — `DEFAULT_WEIGHTS` is the single source of truth for all classifier weights and lock thresholds (`src/vision/classifier.ts` and `src/game/round.ts` consume it rather than hardcoding values).
+- `src/vision/classifier.ts` — `scoreFromFeatures` computes rock/paper/scissors/unknown scores from `FrameFeatures` using `DEFAULT_WEIGHTS`. `classifySequence` weights the last few frames and requires the confidence/margin floor from `DEFAULT_WEIGHTS.unknownThresholds` before returning anything other than `"unknown"`.
+- `src/game/round.ts` — separate from scoring: `shouldLockPrediction` reads the lock thresholds from `DEFAULT_WEIGHTS.lock` to decide whether a prediction is trustworthy enough to commit to as the round's answer.
 
 Workflow:
 
 1. Reproduce the problem first (see "Running the app" above) — watch the live confidence/margin readout to tell whether it's a *scoring* problem (wrong move gets the highest score) or a *timing* problem (right move scores highest but locks too early/late/not at all).
-2. Scoring problem: adjust weights/targets in `scoreFromFeatures`. These are all 0-1 range and interact — raising one move's score changes the normalized scores of the others via `normalizeScores`.
-3. Timing/lock problem: adjust the constants in `round.ts` rather than the classifier — "the model thinks it's a rock" and "we're confident enough to commit to rock" are different questions.
+2. Scoring problem: adjust weights/targets in `src/config/weights.ts` (consumed by `scoreFromFeatures`). These are all 0-1 range and interact — raising one move's score changes the normalized scores of the others via `normalizeScores`.
+3. Timing/lock problem: adjust the lock thresholds in `src/config/weights.ts` rather than the classifier — "the model thinks it's a rock" and "we're confident enough to commit to rock" are different questions.
 4. Add or update a case in `src/test/classifier.test.ts` (scoring changes) or `src/test/round.test.ts` (lock-threshold changes) that encodes the specific behavior you fixed. These construct synthetic `FrameFeatures`/`PredictionResult` objects, so they're a fast feedback loop without a camera.
 5. Run `npm test`, then re-verify live — synthetic fixtures can't fully substitute for a real hand in front of a real camera.
 
-Common pitfalls: don't chase a single bad frame — `classifySequence` already weights a short history and requires `LOCK_STABLE_FRAMES` consecutive agreement before `round.ts` will lock. Confidence and margin are different signals: confidence is "how much this move dominates," margin is "how far ahead of the runner-up." A low-margin high-confidence read usually means two moves are being confused with each other, not that the whole read is noisy.
+Common pitfalls: don't chase a single bad frame — `classifySequence` already weights a short history and requires `DEFAULT_WEIGHTS.lock.stableFrames` consecutive agreement before `round.ts` will lock. Confidence and margin are different signals: confidence is "how much this move dominates," margin is "how far ahead of the runner-up." A low-margin high-confidence read usually means two moves are being confused with each other, not that the whole read is noisy.
+
+## Labeling gesture samples
+
+Use the dev-only **labeling mode** to collect ground-truth samples for classifier tuning:
+
+1. Start the app and enable the camera (see "Running the app" above).
+2. Click **Labeling mode** in the controls.
+3. Show a gesture and click the matching label button (rock / paper / scissors / unknown). Each click records the current `FrameFeatures`, the model's predicted move, confidence, margin, and your label.
+4. Repeat for a variety of gestures and lighting positions.
+5. Click **Export samples** to download the full `LabeledSample[]` array as JSON.
+6. Inspect the downloaded JSON to confirm the shape matches `LabeledSample` in `src/types.ts`.
 
 ## Demo checklist
 

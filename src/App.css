@@ -371,6 +371,37 @@ button {
   line-height: 1.45;
 }
 
+.labeling-panel {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(11, 18, 29, 0.82);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+}
+
+.labeling-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.labeling-panel__header span,
+.labeling-panel__header b {
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.labeling-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
 .history {
   border-top: 1px solid rgba(148, 163, 184, 0.18);
   padding-top: 8px;

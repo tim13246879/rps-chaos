@@ -13,8 +13,8 @@ getUserMedia (useHandVision.ts)
 
 - `useHandVision.ts` is the only module that touches browser APIs (`getUserMedia`, `requestAnimationFrame`, the MediaPipe `HandLandmarker`). It owns the render loop, adaptive throttling based on measured FPS, and drawing the landmark overlay on the canvas.
 - `landmarks.ts` converts 21 raw hand landmarks into `FrameFeatures`: per-finger extension (0-1, how straight/extended each finger is), per-finger angle, a thumb-specific heuristic, "scissors spread" (index-to-middle tip distance), and average finger velocity (for detecting an opening/closing motion).
-- `classifier.ts` turns features into scores for rock/paper/scissors/unknown. `scoreFromFeatures` scores a single frame; `classifySequence` weights the last few frames (recent frames weighted higher) and also tracks how many consecutive frames agree on the top move (`stableFrames`).
-- `round.ts` is a separate concern from scoring: given a `PredictionResult`, should the app commit to it as *the* answer for this round? That's gated by `LOCK_CONFIDENCE`, `LOCK_MARGIN`, and `LOCK_STABLE_FRAMES` in `shouldLockPrediction`.
+- `classifier.ts` turns features into scores for rock/paper/scissors/unknown. `scoreFromFeatures` scores a single frame using `DEFAULT_WEIGHTS` from `src/config/weights.ts`; `classifySequence` weights the last few frames (recent frames weighted higher, window size from `DEFAULT_WEIGHTS`) and also tracks how many consecutive frames agree on the top move (`stableFrames`).
+- `round.ts` is a separate concern from scoring: given a `PredictionResult`, should the app commit to it as *the* answer for this round? `shouldLockPrediction` consumes the lock thresholds from `DEFAULT_WEIGHTS` in `src/config/weights.ts`.
 
 ## Why the pure/impure split matters
 
@@ -35,5 +35,6 @@ The "prediction window" (`PREDICTION_WINDOW_START_MS` to `PREDICTION_WINDOW_END_
 ## How to extend
 
 - **New gesture**: add scoring logic to `scoreFromFeatures` in `classifier.ts`, extend the `Move` union in `types.ts`, update `getCounterMove` in `moves.ts`, add test cases in `classifier.test.ts`.
-- **Retune detection/timing**: see `docs/operations.md#tuning-the-gesture-classifier`.
+- **Retune detection/timing**: adjust `DEFAULT_WEIGHTS` in `src/config/weights.ts` and see `docs/operations.md#tuning-the-gesture-classifier`.
+- **Collect labeled ground-truth samples**: use the dev-only **labeling mode** in the UI to record `LabeledSample`s and export them as JSON — see `docs/operations.md#labeling-gesture-samples`.
 - **New UI element**: add a presentational component under `src/components/`, wire props from `App.tsx` — components should stay presentational (data in via props) like `CameraPanel`/`PredictionPanel`/`MoveGlyph`.
