@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CameraPanel } from "./components/CameraPanel";
 import { PredictionPanel } from "./components/PredictionPanel";
+import {
+  COUNTDOWN_AUDIO_LEAD_MS,
+  createCountdownAudioPlayer,
+  type CountdownAudioPlayer,
+} from "./countdownAudio";
 import { getCounterMove } from "./game/moves";
 import {
   getMachineStatus,
@@ -52,6 +57,7 @@ export default function App() {
   const [lowConfidence, setLowConfidence] = useState(false);
   const [history, setHistory] = useState<RoundRecord[]>([]);
   const [practiceMode, setPracticeMode] = useState(false);
+  const countdownAudioRef = useRef<CountdownAudioPlayer | null>(null);
   const bestLatePredictionRef = useRef<PredictionResult | null>(null);
   const recordedRoundRef = useRef(false);
 
@@ -85,12 +91,15 @@ export default function App() {
       return;
     }
 
+    countdownAudioRef.current ??= createCountdownAudioPlayer();
+    void countdownAudioRef.current?.play();
+
     bestLatePredictionRef.current = null;
     recordedRoundRef.current = false;
     setLockedPrediction(null);
     setLockedAtMs(null);
     setLowConfidence(false);
-    setRoundStartedAt(performance.now());
+    setRoundStartedAt(performance.now() + COUNTDOWN_AUDIO_LEAD_MS);
   }, [snapshot.cameraReady]);
 
   const lockPrediction = useCallback(
@@ -112,6 +121,10 @@ export default function App() {
   useEffect(() => {
     const timer = window.setInterval(() => setClockNow(performance.now()), 50);
     return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    return () => countdownAudioRef.current?.dispose();
   }, []);
 
   useEffect(() => {
