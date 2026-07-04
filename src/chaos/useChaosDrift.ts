@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { effectiveMultiplier, INITIAL_DRIFT, nextChaosLevel, stepDrift } from "./drift";
+import {
+  DEFAULT_CHAOS_LEVEL,
+  effectiveMultiplier,
+  INITIAL_DRIFT,
+  nextChaosLevel,
+  stepDrift,
+} from "./drift";
 import { INITIAL_PHANTOM, phantomTitle, stepPhantom } from "./phantomTitle";
 
 const TICK_MS = 50;
@@ -13,7 +19,7 @@ export interface ChaosState {
 }
 
 export function useChaosDrift(): ChaosState {
-  const [level, setLevel] = useState(1);
+  const [level, setLevel] = useState(DEFAULT_CHAOS_LEVEL);
   const [effects, setEffects] = useState<Record<ChaosEffect, boolean>>({
     color: true,
     blur: true,

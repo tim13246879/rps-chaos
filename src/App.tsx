@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { DEFAULT_CHAOS_LEVEL } from "./chaos/drift";
 import { useChaosDrift } from "./chaos/useChaosDrift";
 import { CameraPanel } from "./components/CameraPanel";
 import { ChaosToggles } from "./components/ChaosToggles";
@@ -209,7 +210,9 @@ export default function App() {
           onTogglePractice={() => setPracticeMode((current) => !current)}
         />
       </div>
-      {chaos.level !== 1 ? <span className="chaos-indicator">{chaos.level}x</span> : null}
+      {chaos.level !== DEFAULT_CHAOS_LEVEL ? (
+        <span className="chaos-indicator">{chaos.level}x</span>
+      ) : null}
       {DISTORT_MODE ? <ChaosToggles effects={chaos.effects} onToggle={chaos.toggleEffect} /> : null}
     </main>
   );

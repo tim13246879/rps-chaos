@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   BLUR_AMPLITUDE_PX,
   BLUR_MAX_PX,
+  CHAOS_LEVELS,
+  DEFAULT_CHAOS_LEVEL,
   effectiveMultiplier,
   HUE_AMPLITUDE_DEG,
   INITIAL_DRIFT,
@@ -90,6 +92,10 @@ describe("nextChaosLevel", () => {
 
   it("falls back to 1x for unrecognized levels", () => {
     expect(nextChaosLevel(42)).toBe(1);
+  });
+
+  it("starts on a level that is part of the cycle", () => {
+    expect(CHAOS_LEVELS).toContain(DEFAULT_CHAOS_LEVEL);
   });
 });
 

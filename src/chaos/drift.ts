@@ -8,6 +8,7 @@ export interface DriftState {
 export const INITIAL_DRIFT: DriftState = { hueDeg: 0, warmth: 0, blurPx: 0, scaleDelta: 0 };
 
 export const CHAOS_LEVELS = [1, 10, 100, 0] as const;
+export const DEFAULT_CHAOS_LEVEL = 10;
 
 export const HUE_AMPLITUDE_DEG = 12;
 export const WARMTH_AMPLITUDE = 0.05;
