@@ -8,7 +8,6 @@ interface PredictionPanelProps {
   clock: RoundClock;
   prediction: PredictionResult;
   counterMove: Move;
-  lockedMove: Move;
   lockedAtMs: number | null;
   lowConfidence: boolean;
   history: RoundRecord[];
@@ -27,7 +26,6 @@ export function PredictionPanel({
   clock,
   prediction,
   counterMove,
-  lockedMove,
   lockedAtMs,
   lowConfidence,
   history,
@@ -40,7 +38,7 @@ export function PredictionPanel({
   onCalibrate,
   onTogglePractice,
 }: PredictionPanelProps) {
-  const displayedUserMove = lockedMove === "unknown" ? prediction.move : lockedMove;
+  const isLocked = lockedAtMs !== null;
 
   return (
     <aside className="prediction-panel" aria-label="Prediction and counter move">
@@ -60,7 +58,7 @@ export function PredictionPanel({
       <div className="move-grid">
         <div className="metric-block">
           <span>Your likely move</span>
-          <strong>{MOVE_LABELS[displayedUserMove]}</strong>
+          <strong>{MOVE_LABELS[prediction.move]}</strong>
         </div>
         <div className="metric-block">
           <span>Confidence</span>
@@ -68,7 +66,7 @@ export function PredictionPanel({
         </div>
       </div>
 
-      <div className={`counter-card ${lockedMove !== "unknown" ? "counter-card--locked" : ""}`}>
+      <div className={`counter-card ${isLocked ? "counter-card--locked" : ""}`}>
         <span>Counter move</span>
         <MoveGlyph move={counterMove} />
         <strong>{MOVE_LABELS[counterMove]}</strong>

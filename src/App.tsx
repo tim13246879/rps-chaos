@@ -60,7 +60,8 @@ export default function App() {
     [clockNow, roundStartedAt],
   );
   const activePrediction = snapshot.prediction ?? UNKNOWN_PREDICTION;
-  const displayedPrediction = lockedPrediction ?? activePrediction;
+  const displayedPrediction =
+    lockedAtMs === null ? activePrediction : lockedPrediction ?? UNKNOWN_PREDICTION;
   const lockedMove: Move = lockedPrediction?.move ?? "unknown";
   const counterMove = getCounterMove(displayedPrediction.move);
   const status = snapshot.cameraReady
@@ -151,9 +152,8 @@ export default function App() {
         <PredictionPanel
           status={status}
           clock={roundClock}
-          prediction={activePrediction}
+          prediction={displayedPrediction}
           counterMove={counterMove}
-          lockedMove={lockedMove}
           lockedAtMs={lockedAtMs}
           lowConfidence={lowConfidence}
           history={history}
