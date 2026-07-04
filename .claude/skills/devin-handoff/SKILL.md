@@ -1,6 +1,6 @@
 ---
 name: devin-handoff
-description: Scope a piece of work on RPS Oracle into a well-formed Devin (Cognition's AI software engineer) task and hand it off via the Devin CLI or web session, instead of implementing it directly. Use whenever the user wants to delegate a feature, fix, or task to Devin, asks to "send this to Devin," start a Devin session, or generally wants to offload implementation work rather than have it done here.
+description: Scope a piece of work on RPS Chaos into a well-formed Devin (Cognition's AI software engineer) task and hand it off via the Devin CLI or web session, instead of implementing it directly. Use whenever the user wants to delegate a feature, fix, or task to Devin, asks to "send this to Devin," start a Devin session, or generally wants to offload implementation work rather than have it done here.
 ---
 
 # Hand a task off to Devin
@@ -61,4 +61,4 @@ Use `@Files` (or `@Repos`) mentions to attach `AGENTS.md`, `docs/architecture.md
 
 ## Reviewing Devin's work
 
-Don't merge on green tests alone for anything touching `vision/`, `game/round.ts`, or the components — `npm test`/`npm run build` don't prove gesture detection or camera behavior. Ask Devin for its test/video recording of the browser flow, and separately re-verify locally via the `run-rps-oracle` skill / `docs/operations.md#running-the-app` before treating it as done.
+Don't merge on green tests alone for anything touching `vision/`, `game/round.ts`, or the components — `npm test`/`npm run build` don't prove gesture detection or camera behavior. Ask Devin for its test/video recording of the browser flow, and separately re-verify locally via the `run-rps-chaos` skill / `docs/operations.md#running-the-app` before treating it as done.

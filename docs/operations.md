@@ -1,6 +1,6 @@
 # Operations
 
-Tool-agnostic procedures for running, tuning, and demoing RPS Oracle. Any agent (Claude Code, Codex, a human) should follow these directly; Claude Code additionally exposes them as skills under `.claude/skills/` that point back here.
+Tool-agnostic procedures for running, tuning, and demoing RPS Chaos. Any agent (Claude Code, Codex, a human) should follow these directly; Claude Code additionally exposes them as skills under `.claude/skills/` that point back here.
 
 ## Running the app
 
@@ -8,7 +8,7 @@ Tool-agnostic procedures for running, tuning, and demoing RPS Oracle. Any agent 
 
 1. Install deps if `node_modules/` is missing: `npm install`.
 2. Start the dev server: `npm run dev`. It binds to `http://127.0.0.1:5173/` (not `0.0.0.0`).
-3. Open that URL in a real browser (not a headless/no-camera environment). The first load fetches the MediaPipe wasm runtime and hand-landmarker model from a CDN, so it needs network access and takes a few seconds.
+3. Open that URL in a real browser (not a headless/no-camera environment). The MediaPipe wasm runtime and hand-landmarker model are self-hosted under `public/mediapipe/` (copied from `node_modules` by the `postinstall` script), so the first load works offline once `npm install` has run.
 4. Click **"Load model + camera"** and grant the camera permission prompt. The same button becomes **"Stop camera"** once live, and **"Start camera"** after stopping — it toggles rather than being a one-way switch.
 5. Click **Calibrate** with your hand out of frame or in a neutral position — this clears the rolling feature history so stale frames don't bias the first prediction.
 6. Click **Start round** and show a hand: watch the 3-2-1-SHOOT countdown, then check that:
