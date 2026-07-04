@@ -89,7 +89,7 @@ export function PredictionPanel({
         <button type="button" className="button" onClick={onStartRound} disabled={!cameraReady}>
           Start round
         </button>
-        <button type="button" className="button" onClick={onCalibrate} disabled={!cameraReady}>
+        {/* <button type="button" className="button" onClick={onCalibrate} disabled={!cameraReady}>
           Calibrate
         </button>
         <button
@@ -98,7 +98,7 @@ export function PredictionPanel({
           onClick={onTogglePractice}
         >
           Practice mode
-        </button>
+        </button> */}
       </div>
 
       {error && <div className="error-box">{error}</div>}
