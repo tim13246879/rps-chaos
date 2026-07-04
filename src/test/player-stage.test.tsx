@@ -54,18 +54,21 @@ describe("PlayerStage", () => {
     expect(html).toContain("Computer move");
     expect(html).toContain("Paper");
     expect(html).not.toContain("Ready");
+    expect(html).not.toContain("camera-overlay");
+    expect(html).not.toContain("player-stage__countdown");
     expect(html).not.toContain("Confidence");
     expect(html).not.toContain("History");
     expect(html).not.toContain("Calibrate");
     expect(html).not.toContain("Practice mode");
   });
 
-  it("shows the countdown once a round is active", () => {
+  it("leaves countdown display to the fullscreen overlay during a round", () => {
     const html = renderPlayerStage({
       clock: getRoundClock(1000, 1000),
     });
 
-    expect(html).toContain("3");
+    expect(html).toContain("Playing");
+    expect(html).not.toContain("player-stage__countdown");
   });
 
   it("starts with a camera action before camera permission is active", () => {

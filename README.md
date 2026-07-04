@@ -1,4 +1,4 @@
-# RPS Chaos
+# Rock Paper Scissor Chaos
 
 A browser-based rock-paper-scissors "oracle": it watches your webcam during a 3-2-1-SHOOT countdown, predicts which gesture you're about to throw *before you finish revealing it*, and shows you the counter move that beats it. No trained model, no server — hand tracking is MediaPipe Tasks Vision running fully client-side, and gesture recognition is a hand-tuned heuristic scorer over finger-extension features.
 

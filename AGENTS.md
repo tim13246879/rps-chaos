@@ -4,7 +4,7 @@ Instructions for any coding agent (Claude Code, Codex, Devin, etc.) working in t
 
 ## Project summary
 
-RPS Chaos is a browser-based rock-paper-scissors "oracle": it watches your webcam during a 3-2-1-SHOOT countdown, predicts which gesture you're about to throw, and displays the winning counter move before you finish revealing it. No server, no trained ML model — hand-tracking comes from MediaPipe Tasks Vision, and gesture recognition is a hand-tuned heuristic scorer over finger-extension features.
+Rock Paper Scissor Chaos is a browser-based rock-paper-scissors "oracle": it watches your webcam during a 3-2-1-SHOOT countdown, predicts which gesture you're about to throw, and displays the winning counter move before you finish revealing it. No server, no trained ML model — hand-tracking comes from MediaPipe Tasks Vision, and gesture recognition is a hand-tuned heuristic scorer over finger-extension features.
 
 ## Commands
 

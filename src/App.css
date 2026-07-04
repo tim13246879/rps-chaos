@@ -208,28 +208,10 @@ button {
 
 .player-stage {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto;
   flex: 1;
   gap: 14px;
   min-height: 0;
-}
-
-.player-stage--idle {
-  grid-template-rows: minmax(0, 1fr) auto;
-}
-
-.player-stage__countdown {
-  display: grid;
-  place-items: center;
-  min-height: clamp(78px, 16vh, 132px);
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 8px;
-  background: rgba(2, 6, 23, 0.4);
-  color: #f8fafc;
-  font-size: clamp(3.6rem, 12vw, 8.5rem);
-  font-weight: 950;
-  line-height: 0.9;
-  text-align: center;
 }
 
 .player-stage__arena {
@@ -326,11 +308,6 @@ button {
     gap: 10px;
   }
 
-  .player-stage__countdown {
-    min-height: 84px;
-    font-size: clamp(3.8rem, 10vw, 7.2rem);
-  }
-
   .player-stage__arena {
     gap: 10px;
   }
@@ -403,16 +380,16 @@ button {
   font-size: clamp(9rem, 42vw, 34rem);
   font-weight: 950;
   line-height: 0.8;
-  letter-spacing: -0.04em;
-  color: rgba(244, 247, 251, 0.42);
+  letter-spacing: 0;
+  color: rgba(244, 247, 251, 0.72);
   text-shadow: 0 0 70px rgba(34, 211, 238, 0.3);
   animation: countdown-pop 240ms cubic-bezier(0.2, 0.9, 0.25, 1);
 }
 
 .countdown-overlay__value--shoot {
   font-size: clamp(4.5rem, 22vw, 16rem);
-  letter-spacing: 0.04em;
-  color: rgba(245, 158, 11, 0.62);
+  letter-spacing: 0;
+  color: rgba(245, 158, 11, 0.82);
   text-shadow: 0 0 80px rgba(245, 158, 11, 0.4);
 }
 
@@ -643,10 +620,6 @@ button {
   }
 
   .player-stage {
-    grid-template-rows: auto auto auto;
-  }
-
-  .player-stage--idle {
     grid-template-rows: minmax(0, 1fr) auto;
   }
 

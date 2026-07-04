@@ -7,14 +7,21 @@ interface CameraPanelProps {
   canvasRef: RefObject<HTMLCanvasElement>;
   snapshot: VisionSnapshot;
   showMetrics?: boolean;
+  showOverlay?: boolean;
 }
 
-export function CameraPanel({ videoRef, canvasRef, snapshot, showMetrics = true }: CameraPanelProps) {
+export function CameraPanel({
+  videoRef,
+  canvasRef,
+  snapshot,
+  showMetrics = true,
+  showOverlay = true,
+}: CameraPanelProps) {
   return (
     <section className="camera-panel" aria-label="Camera analysis">
       <div className="camera-shell">
         <video ref={videoRef} className="camera-video" playsInline muted />
-        <canvas ref={canvasRef} className="camera-overlay" />
+        {showOverlay && <canvas ref={canvasRef} className="camera-overlay" />}
         {!snapshot.cameraReady && (
           <div className="camera-empty">
             <div className="camera-empty__title">Camera standby</div>

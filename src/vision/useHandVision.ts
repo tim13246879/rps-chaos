@@ -185,7 +185,7 @@ export function useHandVision() {
     const canvas = canvasRef.current;
     const landmarker = landmarkerRef.current;
 
-    if (!video || !canvas || !landmarker || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+    if (!video || !landmarker || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
       rafRef.current = window.requestAnimationFrame(processFrame);
       return;
     }
@@ -200,7 +200,11 @@ export function useHandVision() {
     const previousProcessTime = lastProcessedAtRef.current;
     lastProcessedAtRef.current = now;
     const result = landmarker.detectForVideo(video, now);
-    drawLandmarks(canvas, result, video.videoWidth || 1280, video.videoHeight || 720);
+
+    if (canvas) {
+      drawLandmarks(canvas, result, video.videoWidth || 1280, video.videoHeight || 720);
+    }
+
     const rawLandmarks = result.landmarks[0] as LandmarkPoint[] | undefined;
     const features = extractFrameFeatures(rawLandmarks, now, lastFeatureRef.current);
 

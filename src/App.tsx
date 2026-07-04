@@ -12,6 +12,7 @@ import { getCounterMove } from "./game/moves";
 import {
   getCountdownOverlay,
   getMachineStatus,
+  getPlayerCounterMove,
   getRoundClock,
   isLowConfidenceLock,
   pickBetterPrediction,
@@ -82,6 +83,8 @@ export default function App() {
     lockedAtMs === null ? activePrediction : lockedPrediction ?? UNKNOWN_PREDICTION;
   const lockedMove: Move = lockedPrediction?.move ?? "unknown";
   const counterMove = getCounterMove(displayedPrediction.move);
+  const playerCounterMove = getPlayerCounterMove(roundClock.phase, counterMove);
+  const playerLockedAtMs = playerCounterMove === "unknown" ? null : lockedAtMs;
   const status = snapshot.cameraReady
     ? getMachineStatus(roundClock.phase, lockedMove, snapshot.handVisible)
     : "Camera standby";
@@ -177,7 +180,7 @@ export default function App() {
       <CountdownOverlay {...countdownOverlay} />
       <header className="app-header">
         <div>
-          <h1>RPS Chaos</h1>
+          <h1>Rock Paper Scissor Chaos</h1>
           {devMode && <p>Webcam hand tracking that predicts the reveal and plays the winning counter.</p>}
         </div>
         <div className="app-header__meta">
@@ -221,8 +224,8 @@ export default function App() {
           canvasRef={canvasRef}
           snapshot={snapshot}
           clock={roundClock}
-          computerMove={counterMove}
-          lockedAtMs={lockedAtMs}
+          computerMove={playerCounterMove}
+          lockedAtMs={playerLockedAtMs}
           error={snapshot.error}
           onToggleCamera={toggleCamera}
           onStartRound={startRound}

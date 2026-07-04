@@ -3,6 +3,7 @@ import {
   COUNTDOWN_MS,
   COUNTDOWN_OVERLAY_END_MS,
   getCountdownOverlay,
+  getPlayerCounterMove,
   getRoundClock,
   getRoundLabel,
   getRoundPhase,
@@ -75,5 +76,14 @@ describe("lock logic", () => {
     expect(pickBetterPrediction(null, weak)).toBe(weak);
     expect(pickBetterPrediction(weak, strong)).toBe(strong);
     expect(pickBetterPrediction(strong, weak)).toBe(strong);
+  });
+});
+
+describe("player counter reveal", () => {
+  it("keeps the player-mode counter hidden until shoot", () => {
+    expect(getPlayerCounterMove("idle", "paper")).toBe("unknown");
+    expect(getPlayerCounterMove("countdown", "paper")).toBe("unknown");
+    expect(getPlayerCounterMove("shoot", "paper")).toBe("paper");
+    expect(getPlayerCounterMove("result", "paper")).toBe("paper");
   });
 });
