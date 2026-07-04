@@ -1,6 +1,7 @@
 import type { ChaosEffect } from "../chaos/useChaosDrift";
 
 const EFFECT_LABELS: Record<ChaosEffect, string> = {
+  color: "Colour drift",
   blur: "Blur whisper",
   breathe: "Scale breathing",
   title: "Title phantom",

@@ -1,8 +1,13 @@
 export const TITLE_PERIOD_MS = 45_000;
 // Fraction at the end of each cycle during which the phantom title shows.
 export const TITLE_ACTIVE_FRACTION = 0.2;
-// Cyrillic Es, visually identical to Latin C in most fonts.
-const HOMOGLYPH_C = "С";
+
+// Noticeable on a double take, but easy to second-guess after it reverts.
+const VARIANTS: ((base: string) => string)[] = [
+  (base) => `${base}.`,
+  (base) => base.replace("C", "c"),
+  (base) => `${base.slice(0, -2)}${base.slice(-1)}${base.slice(-2, -1)}`,
+];
 
 export function phantomTitle(elapsedMs: number, multiplier: number, base: string): string {
   if (multiplier <= 0) {
@@ -14,5 +19,5 @@ export function phantomTitle(elapsedMs: number, multiplier: number, base: string
   if (phase < 1 - TITLE_ACTIVE_FRACTION) {
     return base;
   }
-  return cycle % 2 === 0 ? `${base} ` : base.replace("C", HOMOGLYPH_C);
+  return VARIANTS[cycle % VARIANTS.length](base);
 }

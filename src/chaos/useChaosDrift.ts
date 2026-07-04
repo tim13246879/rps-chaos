@@ -4,7 +4,7 @@ import { phantomTitle } from "./phantomTitle";
 
 const TICK_MS = 50;
 
-export type ChaosEffect = "blur" | "breathe" | "title";
+export type ChaosEffect = "color" | "blur" | "breathe" | "title";
 
 export interface ChaosState {
   level: number;
@@ -15,6 +15,7 @@ export interface ChaosState {
 export function useChaosDrift(): ChaosState {
   const [level, setLevel] = useState(1);
   const [effects, setEffects] = useState<Record<ChaosEffect, boolean>>({
+    color: true,
     blur: true,
     breathe: true,
     title: true,
@@ -48,8 +49,8 @@ export function useChaosDrift(): ChaosState {
     const tick = () => {
       const elapsedMs = performance.now() - epochRef.current;
       const drift = driftAt(elapsedMs, multiplier);
-      rootStyle.setProperty("--chaos-hue", `${drift.hueDeg}deg`);
-      rootStyle.setProperty("--chaos-warmth", `${drift.warmth}`);
+      rootStyle.setProperty("--chaos-hue", effects.color ? `${drift.hueDeg}deg` : "0deg");
+      rootStyle.setProperty("--chaos-warmth", effects.color ? `${drift.warmth}` : "0");
       rootStyle.setProperty("--chaos-blur", effects.blur ? `${drift.blurPx}px` : "0px");
       rootStyle.setProperty("--chaos-scale", effects.breathe ? `${drift.scale}` : "1");
       const title = effects.title ? phantomTitle(elapsedMs, multiplier, baseTitle) : baseTitle;

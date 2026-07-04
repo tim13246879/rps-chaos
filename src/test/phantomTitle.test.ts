@@ -21,20 +21,16 @@ describe("phantomTitle", () => {
     expect(phantomTitle(TITLE_PERIOD_MS + QUIET_MS - 1, 1, BASE)).toBe(BASE);
   });
 
-  it("adds a trailing space in even active cycles", () => {
-    expect(phantomTitle(QUIET_MS + 1_000, 1, BASE)).toBe(`${BASE} `);
-  });
-
-  it("swaps in a homoglyph in odd active cycles", () => {
-    const swapped = phantomTitle(TITLE_PERIOD_MS + QUIET_MS + 1_000, 1, BASE);
-    expect(swapped).not.toBe(BASE);
-    expect(swapped).toHaveLength(BASE.length);
-    expect(swapped).toContain("С");
+  it("rotates through the phantom variants across active cycles", () => {
+    expect(phantomTitle(QUIET_MS + 1_000, 1, BASE)).toBe("RPS Chaos.");
+    expect(phantomTitle(TITLE_PERIOD_MS + QUIET_MS + 1_000, 1, BASE)).toBe("RPS chaos");
+    expect(phantomTitle(2 * TITLE_PERIOD_MS + QUIET_MS + 1_000, 1, BASE)).toBe("RPS Chaso");
+    expect(phantomTitle(3 * TITLE_PERIOD_MS + QUIET_MS + 1_000, 1, BASE)).toBe("RPS Chaos.");
   });
 
   it("cycles faster at higher multipliers", () => {
     const elapsedMs = (QUIET_MS + 1_000) / 100;
-    expect(phantomTitle(elapsedMs, 100, BASE)).toBe(`${BASE} `);
+    expect(phantomTitle(elapsedMs, 100, BASE)).toBe("RPS Chaos.");
     expect(phantomTitle(elapsedMs, 1, BASE)).toBe(BASE);
   });
 });
