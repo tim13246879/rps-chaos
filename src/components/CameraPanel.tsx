@@ -1,19 +1,27 @@
-import type { RefObject } from "react";
+import type { Ref } from "react";
 import type { VisionSnapshot } from "../vision/useHandVision";
 import { formatPercent } from "../game/moves";
 
 interface CameraPanelProps {
-  videoRef: RefObject<HTMLVideoElement>;
-  canvasRef: RefObject<HTMLCanvasElement>;
+  videoRef: Ref<HTMLVideoElement>;
+  canvasRef: Ref<HTMLCanvasElement>;
   snapshot: VisionSnapshot;
+  showMetrics?: boolean;
+  showOverlay?: boolean;
 }
 
-export function CameraPanel({ videoRef, canvasRef, snapshot }: CameraPanelProps) {
+export function CameraPanel({
+  videoRef,
+  canvasRef,
+  snapshot,
+  showMetrics = true,
+  showOverlay = true,
+}: CameraPanelProps) {
   return (
     <section className="camera-panel" aria-label="Camera analysis">
       <div className="camera-shell">
         <video ref={videoRef} className="camera-video" playsInline muted />
-        <canvas ref={canvasRef} className="camera-overlay" />
+        {showOverlay && <canvas ref={canvasRef} className="camera-overlay" />}
         {!snapshot.cameraReady && (
           <div className="camera-empty">
             <div className="camera-empty__title">Camera standby</div>
@@ -24,11 +32,13 @@ export function CameraPanel({ videoRef, canvasRef, snapshot }: CameraPanelProps)
           <div className="camera-hint">Show one hand in frame</div>
         )}
       </div>
-      <div className="camera-metrics">
-        <span>Vision FPS {Math.round(snapshot.fps)}</span>
-        <span>Confidence {formatPercent(snapshot.prediction.confidence)}</span>
-        <span>Margin {formatPercent(snapshot.prediction.margin)}</span>
-      </div>
+      {showMetrics && (
+        <div className="camera-metrics">
+          <span>Vision FPS {Math.round(snapshot.fps)}</span>
+          <span>Confidence {formatPercent(snapshot.prediction.confidence)}</span>
+          <span>Margin {formatPercent(snapshot.prediction.margin)}</span>
+        </div>
+      )}
     </section>
   );
 }
