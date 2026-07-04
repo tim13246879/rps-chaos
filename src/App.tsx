@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useChaosDrift } from "./chaos/useChaosDrift";
 import { CameraPanel } from "./components/CameraPanel";
 import { CountdownOverlay } from "./components/CountdownOverlay";
 import { PredictionPanel } from "./components/PredictionPanel";
@@ -52,6 +53,7 @@ function makeRoundRecord(
 
 export default function App() {
   const { videoRef, canvasRef, snapshot, enableCamera, stopCamera, calibrate } = useHandVision();
+  const chaosLevel = useChaosDrift();
   const [roundStartedAt, setRoundStartedAt] = useState<number | null>(null);
   const [clockNow, setClockNow] = useState(() => performance.now());
   const [lockedPrediction, setLockedPrediction] = useState<PredictionResult | null>(null);
@@ -204,6 +206,7 @@ export default function App() {
           onTogglePractice={() => setPracticeMode((current) => !current)}
         />
       </div>
+      {chaosLevel !== 1 ? <span className="chaos-indicator">{chaosLevel}x</span> : null}
     </main>
   );
 }

@@ -28,6 +28,17 @@ body {
     linear-gradient(145deg, rgba(16, 185, 129, 0.16), transparent 36rem),
     linear-gradient(315deg, rgba(245, 158, 11, 0.14), transparent 32rem),
     #0d1117;
+  filter: hue-rotate(var(--chaos-hue, 0deg)) sepia(var(--chaos-warmth, 0));
+}
+
+.chaos-indicator {
+  position: fixed;
+  bottom: 6px;
+  left: 8px;
+  z-index: 101;
+  color: #64748b;
+  font-size: 10px;
+  opacity: 0.3;
 }
 
 button {
