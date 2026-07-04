@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CameraPanel } from "./components/CameraPanel";
 import { CountdownOverlay } from "./components/CountdownOverlay";
+import { PlayerStage } from "./components/PlayerStage";
 import { PredictionPanel } from "./components/PredictionPanel";
 import {
   COUNTDOWN_AUDIO_LEAD_MS,
@@ -59,6 +60,7 @@ export default function App() {
   const [lowConfidence, setLowConfidence] = useState(false);
   const [history, setHistory] = useState<RoundRecord[]>([]);
   const [practiceMode, setPracticeMode] = useState(false);
+  const [devMode, setDevMode] = useState(false);
   const countdownAudioRef = useRef<CountdownAudioPlayer | null>(null);
   const bestLatePredictionRef = useRef<PredictionResult | null>(null);
   const recordedRoundRef = useRef(false);
@@ -76,7 +78,8 @@ export default function App() {
     [clockNow, roundStartedAt],
   );
   const activePrediction = snapshot.prediction ?? UNKNOWN_PREDICTION;
-  const displayedPrediction = lockedPrediction ?? activePrediction;
+  const displayedPrediction =
+    lockedAtMs === null ? activePrediction : lockedPrediction ?? UNKNOWN_PREDICTION;
   const lockedMove: Move = lockedPrediction?.move ?? "unknown";
   const counterMove = getCounterMove(displayedPrediction.move);
   const status = snapshot.cameraReady
@@ -170,40 +173,61 @@ export default function App() {
   }, [practiceMode, roundClock.elapsedMs, roundStartedAt]);
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell ${devMode ? "app-shell--dev" : "app-shell--player"}`}>
       <CountdownOverlay {...countdownOverlay} />
       <header className="app-header">
         <div>
           <h1>RPS Chaos</h1>
-          <p>Webcam hand tracking that predicts the reveal and plays the winning counter.</p>
+          {devMode && <p>Webcam hand tracking that predicts the reveal and plays the winning counter.</p>}
         </div>
         <div className="app-header__meta">
-          <span>{snapshot.modelReady ? "Model ready" : "Model idle"}</span>
-          <span>{snapshot.cameraReady ? "Camera live" : "Camera off"}</span>
+          {devMode && <span>{snapshot.modelReady ? "Model ready" : "Model idle"}</span>}
+          {devMode && <span>{snapshot.cameraReady ? "Camera live" : "Camera off"}</span>}
+          <button
+            type="button"
+            className={`mode-toggle ${devMode ? "mode-toggle--active" : ""}`}
+            onClick={() => setDevMode((current) => !current)}
+          >
+            Dev mode
+          </button>
         </div>
       </header>
 
-      <div className="app-layout">
-        <CameraPanel videoRef={videoRef} canvasRef={canvasRef} snapshot={snapshot} />
-        <PredictionPanel
-          status={status}
+      {devMode ? (
+        <div className="app-layout">
+          <CameraPanel videoRef={videoRef} canvasRef={canvasRef} snapshot={snapshot} />
+          <PredictionPanel
+            status={status}
+            clock={roundClock}
+            prediction={displayedPrediction}
+            counterMove={counterMove}
+            lockedMove={lockedMove}
+            lockedAtMs={lockedAtMs}
+            lowConfidence={lowConfidence}
+            history={history}
+            practiceMode={practiceMode}
+            modelReady={snapshot.modelReady}
+            cameraReady={snapshot.cameraReady}
+            error={snapshot.error}
+            onToggleCamera={toggleCamera}
+            onStartRound={startRound}
+            onCalibrate={calibrate}
+            onTogglePractice={() => setPracticeMode((current) => !current)}
+          />
+        </div>
+      ) : (
+        <PlayerStage
+          videoRef={videoRef}
+          canvasRef={canvasRef}
+          snapshot={snapshot}
           clock={roundClock}
-          prediction={activePrediction}
-          counterMove={counterMove}
-          lockedMove={lockedMove}
+          computerMove={counterMove}
           lockedAtMs={lockedAtMs}
-          lowConfidence={lowConfidence}
-          history={history}
-          practiceMode={practiceMode}
-          modelReady={snapshot.modelReady}
-          cameraReady={snapshot.cameraReady}
           error={snapshot.error}
           onToggleCamera={toggleCamera}
           onStartRound={startRound}
-          onCalibrate={calibrate}
-          onTogglePractice={() => setPracticeMode((current) => !current)}
         />
-      </div>
+      )}
     </main>
   );
 }

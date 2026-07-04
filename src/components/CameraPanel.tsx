@@ -6,9 +6,10 @@ interface CameraPanelProps {
   videoRef: RefObject<HTMLVideoElement>;
   canvasRef: RefObject<HTMLCanvasElement>;
   snapshot: VisionSnapshot;
+  showMetrics?: boolean;
 }
 
-export function CameraPanel({ videoRef, canvasRef, snapshot }: CameraPanelProps) {
+export function CameraPanel({ videoRef, canvasRef, snapshot, showMetrics = true }: CameraPanelProps) {
   return (
     <section className="camera-panel" aria-label="Camera analysis">
       <div className="camera-shell">
@@ -24,11 +25,13 @@ export function CameraPanel({ videoRef, canvasRef, snapshot }: CameraPanelProps)
           <div className="camera-hint">Show one hand in frame</div>
         )}
       </div>
-      <div className="camera-metrics">
-        <span>Vision FPS {Math.round(snapshot.fps)}</span>
-        <span>Confidence {formatPercent(snapshot.prediction.confidence)}</span>
-        <span>Margin {formatPercent(snapshot.prediction.margin)}</span>
-      </div>
+      {showMetrics && (
+        <div className="camera-metrics">
+          <span>Vision FPS {Math.round(snapshot.fps)}</span>
+          <span>Confidence {formatPercent(snapshot.prediction.confidence)}</span>
+          <span>Margin {formatPercent(snapshot.prediction.margin)}</span>
+        </div>
+      )}
     </section>
   );
 }
