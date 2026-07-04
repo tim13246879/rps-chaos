@@ -214,6 +214,10 @@ button {
   min-height: 0;
 }
 
+.player-stage--idle {
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
 .player-stage__countdown {
   display: grid;
   place-items: center;
@@ -640,6 +644,10 @@ button {
 
   .player-stage {
     grid-template-rows: auto auto auto;
+  }
+
+  .player-stage--idle {
+    grid-template-rows: minmax(0, 1fr) auto;
   }
 
   .player-stage__arena {

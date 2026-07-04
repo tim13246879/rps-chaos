@@ -30,14 +30,20 @@ export function PlayerStage({
   onStartRound,
 }: PlayerStageProps) {
   const isRoundActive = clock.phase === "countdown" || clock.phase === "shoot";
+  const showCountdown = clock.phase !== "idle";
   const primaryAction = snapshot.cameraReady ? "Start round" : "Start camera";
   const canStartRound = snapshot.cameraReady && !isRoundActive;
 
   return (
-    <section className="player-stage" aria-label="Rock paper scissors game">
-      <div className="player-stage__countdown" aria-live="polite">
-        {clock.label}
-      </div>
+    <section
+      className={`player-stage ${showCountdown ? "" : "player-stage--idle"}`}
+      aria-label="Rock paper scissors game"
+    >
+      {showCountdown && (
+        <div className="player-stage__countdown" aria-live="polite">
+          {clock.label}
+        </div>
+      )}
 
       <div className="player-stage__arena">
         <div className="player-stage__camera">

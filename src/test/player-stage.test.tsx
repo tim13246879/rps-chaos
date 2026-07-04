@@ -48,16 +48,24 @@ function renderPlayerStage(props: Partial<Parameters<typeof PlayerStage>[0]> = {
 }
 
 describe("PlayerStage", () => {
-  it("keeps the default surface focused on the countdown, camera, and computer move", () => {
+  it("keeps the idle surface focused on the camera and computer move", () => {
     const html = renderPlayerStage();
 
-    expect(html).toContain("Ready");
     expect(html).toContain("Computer move");
     expect(html).toContain("Paper");
+    expect(html).not.toContain("Ready");
     expect(html).not.toContain("Confidence");
     expect(html).not.toContain("History");
     expect(html).not.toContain("Calibrate");
     expect(html).not.toContain("Practice mode");
+  });
+
+  it("shows the countdown once a round is active", () => {
+    const html = renderPlayerStage({
+      clock: getRoundClock(1000, 1000),
+    });
+
+    expect(html).toContain("3");
   });
 
   it("starts with a camera action before camera permission is active", () => {

@@ -118,6 +118,33 @@ async function createLandmarker(): Promise<HandLandmarker> {
   });
 }
 
+function getStartupErrorMessage(error: unknown): string {
+  const name =
+    typeof DOMException !== "undefined" && error instanceof DOMException ? error.name : "";
+  const rawMessage =
+    error instanceof Error ? error.message : typeof error === "string" ? error : "";
+  const message = rawMessage.toLowerCase();
+
+  if (name === "NotAllowedError" || message.includes("permission")) {
+    return "Camera permission was blocked. Allow camera access in your browser and try again.";
+  }
+
+  if (name === "NotFoundError" || message.includes("device not found")) {
+    return "No camera was found. Connect a webcam and try again.";
+  }
+
+  if (
+    message.includes("wasm") ||
+    message.includes("unexpected token") ||
+    message.includes("vision_wasm") ||
+    message.includes("mediapipe")
+  ) {
+    return "Vision setup failed because the MediaPipe runtime was not available. Restart the dev server and try again.";
+  }
+
+  return rawMessage || "Camera setup failed. Check browser camera permissions and try again.";
+}
+
 export function useHandVision() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -250,7 +277,7 @@ export function useHandVision() {
       setSnapshot((current) => ({ ...current, cameraReady: true, error: null }));
       rafRef.current = window.requestAnimationFrame(processFrame);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Camera setup failed.";
+      const message = getStartupErrorMessage(error);
       setSnapshot((current) => ({ ...current, error: message, cameraReady: false }));
     }
   }, [processFrame]);
