@@ -1,11 +1,26 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { driftAt, effectiveMultiplier, nextChaosLevel } from "./drift";
+import { phantomTitle } from "./phantomTitle";
 
 const TICK_MS = 50;
 
-export function useChaosDrift(): number {
+export type ChaosEffect = "blur" | "breathe" | "title";
+
+export interface ChaosState {
+  level: number;
+  effects: Record<ChaosEffect, boolean>;
+  toggleEffect: (effect: ChaosEffect) => void;
+}
+
+export function useChaosDrift(): ChaosState {
   const [level, setLevel] = useState(1);
+  const [effects, setEffects] = useState<Record<ChaosEffect, boolean>>({
+    blur: true,
+    breathe: true,
+    title: true,
+  });
   const epochRef = useRef(performance.now());
+  const baseTitleRef = useRef(document.title);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -29,10 +44,18 @@ export function useChaosDrift(): number {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const multiplier = effectiveMultiplier(level, reducedMotion);
     const rootStyle = document.documentElement.style;
+    const baseTitle = baseTitleRef.current;
     const tick = () => {
-      const { hueDeg, warmth } = driftAt(performance.now() - epochRef.current, multiplier);
-      rootStyle.setProperty("--chaos-hue", `${hueDeg}deg`);
-      rootStyle.setProperty("--chaos-warmth", `${warmth}`);
+      const elapsedMs = performance.now() - epochRef.current;
+      const drift = driftAt(elapsedMs, multiplier);
+      rootStyle.setProperty("--chaos-hue", `${drift.hueDeg}deg`);
+      rootStyle.setProperty("--chaos-warmth", `${drift.warmth}`);
+      rootStyle.setProperty("--chaos-blur", effects.blur ? `${drift.blurPx}px` : "0px");
+      rootStyle.setProperty("--chaos-scale", effects.breathe ? `${drift.scale}` : "1");
+      const title = effects.title ? phantomTitle(elapsedMs, multiplier, baseTitle) : baseTitle;
+      if (document.title !== title) {
+        document.title = title;
+      }
     };
     tick();
     const interval = window.setInterval(tick, TICK_MS);
@@ -40,8 +63,15 @@ export function useChaosDrift(): number {
       window.clearInterval(interval);
       rootStyle.removeProperty("--chaos-hue");
       rootStyle.removeProperty("--chaos-warmth");
+      rootStyle.removeProperty("--chaos-blur");
+      rootStyle.removeProperty("--chaos-scale");
+      document.title = baseTitle;
     };
-  }, [level]);
+  }, [effects, level]);
 
-  return level;
+  const toggleEffect = useCallback((effect: ChaosEffect) => {
+    setEffects((current) => ({ ...current, [effect]: !current[effect] }));
+  }, []);
+
+  return { level, effects, toggleEffect };
 }

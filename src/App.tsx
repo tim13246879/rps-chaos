@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChaosDrift } from "./chaos/useChaosDrift";
 import { CameraPanel } from "./components/CameraPanel";
+import { ChaosToggles } from "./components/ChaosToggles";
 import { CountdownOverlay } from "./components/CountdownOverlay";
 import { PredictionPanel } from "./components/PredictionPanel";
 import {
@@ -21,6 +22,8 @@ import {
 } from "./game/round";
 import type { Move, PredictionResult, RoundRecord } from "./types";
 import { useHandVision } from "./vision/useHandVision";
+
+const DISTORT_MODE = import.meta.env.VITE_DISTORT === "1";
 
 const UNKNOWN_PREDICTION: PredictionResult = {
   move: "unknown",
@@ -53,7 +56,7 @@ function makeRoundRecord(
 
 export default function App() {
   const { videoRef, canvasRef, snapshot, enableCamera, stopCamera, calibrate } = useHandVision();
-  const chaosLevel = useChaosDrift();
+  const chaos = useChaosDrift();
   const [roundStartedAt, setRoundStartedAt] = useState<number | null>(null);
   const [clockNow, setClockNow] = useState(() => performance.now());
   const [lockedPrediction, setLockedPrediction] = useState<PredictionResult | null>(null);
@@ -206,7 +209,8 @@ export default function App() {
           onTogglePractice={() => setPracticeMode((current) => !current)}
         />
       </div>
-      {chaosLevel !== 1 ? <span className="chaos-indicator">{chaosLevel}x</span> : null}
+      {chaos.level !== 1 ? <span className="chaos-indicator">{chaos.level}x</span> : null}
+      {DISTORT_MODE ? <ChaosToggles effects={chaos.effects} onToggle={chaos.toggleEffect} /> : null}
     </main>
   );
 }

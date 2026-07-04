@@ -6,6 +6,7 @@
   "scripts": {
     "postinstall": "node scripts/copy-mediapipe-wasm.mjs",
     "dev": "vite --host 127.0.0.1",
+    "dev:distort": "VITE_DISTORT=1 vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
     "test": "vitest run",
     "preview": "vite preview --host 127.0.0.1"

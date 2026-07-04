@@ -28,7 +28,9 @@ body {
     linear-gradient(145deg, rgba(16, 185, 129, 0.16), transparent 36rem),
     linear-gradient(315deg, rgba(245, 158, 11, 0.14), transparent 32rem),
     #0d1117;
-  filter: hue-rotate(var(--chaos-hue, 0deg)) sepia(var(--chaos-warmth, 0));
+  filter: hue-rotate(var(--chaos-hue, 0deg)) sepia(var(--chaos-warmth, 0))
+    blur(var(--chaos-blur, 0px));
+  transform: scale(var(--chaos-scale, 1));
 }
 
 .chaos-indicator {
@@ -39,6 +41,28 @@ body {
   color: #64748b;
   font-size: 10px;
   opacity: 0.3;
+}
+
+.chaos-toggles {
+  position: fixed;
+  right: 8px;
+  bottom: 6px;
+  z-index: 101;
+  display: flex;
+  gap: 12px;
+  padding: 4px 8px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 6px;
+  background: rgba(13, 17, 23, 0.85);
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+.chaos-toggles label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
 }
 
 button {

@@ -1,10 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
+  BLUR_AMPLITUDE_PX,
+  BLUR_MAX_PX,
+  BLUR_PERIOD_MS,
   driftAt,
   effectiveMultiplier,
   HUE_AMPLITUDE_DEG,
   HUE_PERIOD_MS,
   nextChaosLevel,
+  SCALE_AMPLITUDE,
+  SCALE_MAX_DELTA,
+  SCALE_PERIOD_MS,
   WARMTH_AMPLITUDE,
   WARMTH_MAX,
 } from "../chaos/drift";
@@ -16,15 +22,17 @@ describe("driftAt", () => {
 
   it("produces zero drift when the multiplier is off", () => {
     for (const elapsedMs of [0, 60_000, 10_000_000]) {
-      expect(driftAt(elapsedMs, 0)).toEqual({ hueDeg: 0, warmth: 0 });
+      expect(driftAt(elapsedMs, 0)).toEqual({ hueDeg: 0, warmth: 0, blurPx: 0, scale: 1 });
     }
   });
 
   it("starts at zero drift when the epoch resets", () => {
     for (const multiplier of [1, 10, 100]) {
-      const { hueDeg, warmth } = driftAt(0, multiplier);
+      const { hueDeg, warmth, blurPx, scale } = driftAt(0, multiplier);
       expect(hueDeg).toBeCloseTo(0, 6);
       expect(warmth).toBeCloseTo(0, 6);
+      expect(blurPx).toBeCloseTo(0, 6);
+      expect(scale).toBeCloseTo(1, 6);
     }
   });
 
@@ -41,19 +49,34 @@ describe("driftAt", () => {
 
   it("stays within the subtle bounds at 1x", () => {
     for (let elapsedMs = 0; elapsedMs <= 600_000; elapsedMs += 5_000) {
-      const { hueDeg, warmth } = driftAt(elapsedMs, 1);
+      const { hueDeg, warmth, blurPx, scale } = driftAt(elapsedMs, 1);
       expect(Math.abs(hueDeg)).toBeLessThanOrEqual(HUE_AMPLITUDE_DEG);
       expect(warmth).toBeGreaterThanOrEqual(0);
       expect(warmth).toBeLessThanOrEqual(WARMTH_AMPLITUDE);
+      expect(blurPx).toBeGreaterThanOrEqual(0);
+      expect(blurPx).toBeLessThanOrEqual(BLUR_AMPLITUDE_PX);
+      expect(scale).toBeGreaterThanOrEqual(1);
+      expect(scale).toBeLessThanOrEqual(1 + SCALE_AMPLITUDE);
     }
   });
 
-  it("clamps warmth at 100x", () => {
+  it("clamps warmth, blur, and scale at 100x", () => {
     for (let elapsedMs = 0; elapsedMs <= 20_000; elapsedMs += 250) {
-      const { warmth } = driftAt(elapsedMs, 100);
+      const { warmth, blurPx, scale } = driftAt(elapsedMs, 100);
       expect(warmth).toBeGreaterThanOrEqual(0);
       expect(warmth).toBeLessThanOrEqual(WARMTH_MAX);
+      expect(blurPx).toBeGreaterThanOrEqual(0);
+      expect(blurPx).toBeLessThanOrEqual(BLUR_MAX_PX);
+      expect(scale).toBeGreaterThanOrEqual(1);
+      expect(scale).toBeLessThanOrEqual(1 + SCALE_MAX_DELTA);
     }
+  });
+
+  it("peaks blur and scale at the half period", () => {
+    const blurPeak = driftAt(BLUR_PERIOD_MS / 2, 1).blurPx;
+    expect(blurPeak).toBeCloseTo(BLUR_AMPLITUDE_PX, 4);
+    const scalePeak = driftAt(SCALE_PERIOD_MS / 2, 1).scale;
+    expect(scalePeak).toBeCloseTo(1 + SCALE_AMPLITUDE, 4);
   });
 
   it("oscillates back to zero after a full period", () => {
