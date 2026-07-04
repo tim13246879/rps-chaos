@@ -7,6 +7,8 @@
     "postinstall": "node scripts/copy-mediapipe-wasm.mjs",
     "predev": "node scripts/copy-mediapipe-wasm.mjs",
     "dev": "vite --host 127.0.0.1",
+    "predev:distort": "node scripts/copy-mediapipe-wasm.mjs",
+    "dev:distort": "VITE_DISTORT=1 vite --host 127.0.0.1",
     "prebuild": "node scripts/copy-mediapipe-wasm.mjs",
     "build": "tsc --noEmit && vite build",
     "prepreview": "node scripts/copy-mediapipe-wasm.mjs",
