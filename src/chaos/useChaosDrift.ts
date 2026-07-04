@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { driftAt, effectiveMultiplier, nextChaosLevel } from "./drift";
-import { phantomTitle } from "./phantomTitle";
+import { effectiveMultiplier, INITIAL_DRIFT, nextChaosLevel, stepDrift } from "./drift";
+import { INITIAL_PHANTOM, phantomTitle, stepPhantom } from "./phantomTitle";
 
 const TICK_MS = 50;
 
@@ -20,7 +20,8 @@ export function useChaosDrift(): ChaosState {
     breathe: true,
     title: true,
   });
-  const epochRef = useRef(performance.now());
+  const driftRef = useRef(INITIAL_DRIFT);
+  const phantomRef = useRef(INITIAL_PHANTOM);
   const baseTitleRef = useRef(document.title);
 
   useEffect(() => {
@@ -33,7 +34,6 @@ export function useChaosDrift(): ChaosState {
         !event.altKey &&
         !event.repeat
       ) {
-        epochRef.current = performance.now();
         setLevel(nextChaosLevel);
       }
     };
@@ -47,13 +47,14 @@ export function useChaosDrift(): ChaosState {
     const rootStyle = document.documentElement.style;
     const baseTitle = baseTitleRef.current;
     const tick = () => {
-      const elapsedMs = performance.now() - epochRef.current;
-      const drift = driftAt(elapsedMs, multiplier);
+      const drift = stepDrift(driftRef.current, multiplier, Math.random);
+      driftRef.current = drift;
       rootStyle.setProperty("--chaos-hue", effects.color ? `${drift.hueDeg}deg` : "0deg");
       rootStyle.setProperty("--chaos-warmth", effects.color ? `${drift.warmth}` : "0");
       rootStyle.setProperty("--chaos-blur", effects.blur ? `${drift.blurPx}px` : "0px");
-      rootStyle.setProperty("--chaos-scale", effects.breathe ? `${drift.scale}` : "1");
-      const title = effects.title ? phantomTitle(elapsedMs, multiplier, baseTitle) : baseTitle;
+      rootStyle.setProperty("--chaos-scale", effects.breathe ? `${1 + drift.scaleDelta}` : "1");
+      phantomRef.current = stepPhantom(phantomRef.current, TICK_MS, multiplier, Math.random);
+      const title = effects.title ? phantomTitle(phantomRef.current, baseTitle) : baseTitle;
       if (document.title !== title) {
         document.title = title;
       }

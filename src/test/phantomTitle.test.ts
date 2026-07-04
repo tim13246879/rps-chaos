@@ -1,36 +1,62 @@
 import { describe, expect, it } from "vitest";
-import { phantomTitle, TITLE_ACTIVE_FRACTION, TITLE_PERIOD_MS } from "../chaos/phantomTitle";
+import {
+  INITIAL_PHANTOM,
+  PHANTOM_DURATION_MS,
+  phantomTitle,
+  stepPhantom,
+  type PhantomState,
+} from "../chaos/phantomTitle";
 
 const BASE = "RPS Chaos";
-const QUIET_MS = TITLE_PERIOD_MS * (1 - TITLE_ACTIVE_FRACTION);
+const TICK_MS = 50;
+
+function sequenceRandom(values: number[]): () => number {
+  let index = 0;
+  return () => values[index++ % values.length];
+}
+
+describe("stepPhantom", () => {
+  it("never fires when the random draw is above the tick chance", () => {
+    let state = INITIAL_PHANTOM;
+    for (let i = 0; i < 1_000; i += 1) {
+      state = stepPhantom(state, TICK_MS, 100, () => 0.99);
+    }
+    expect(state).toEqual(INITIAL_PHANTOM);
+  });
+
+  it("fires with a random variant when the draw is below the tick chance", () => {
+    const state = stepPhantom(INITIAL_PHANTOM, TICK_MS, 1, sequenceRandom([0, 0.7]));
+    expect(state.variant).toBe(2);
+    expect(state.remainingMs).toBe(PHANTOM_DURATION_MS);
+  });
+
+  it("shortens the phantom duration at higher multipliers", () => {
+    const state = stepPhantom(INITIAL_PHANTOM, TICK_MS, 100, sequenceRandom([0, 0.1]));
+    expect(state.remainingMs).toBe(PHANTOM_DURATION_MS / 100);
+  });
+
+  it("counts down while active and reverts when the duration elapses", () => {
+    let state: PhantomState = { variant: 1, remainingMs: 2 * TICK_MS };
+    state = stepPhantom(state, TICK_MS, 1, () => 0.99);
+    expect(state).toEqual({ variant: 1, remainingMs: TICK_MS });
+    state = stepPhantom(state, TICK_MS, 1, () => 0.99);
+    expect(state).toEqual(INITIAL_PHANTOM);
+  });
+
+  it("resets to inactive when the multiplier is off", () => {
+    const active: PhantomState = { variant: 0, remainingMs: 5_000 };
+    expect(stepPhantom(active, TICK_MS, 0, () => 0)).toEqual(INITIAL_PHANTOM);
+  });
+});
 
 describe("phantomTitle", () => {
-  it("is deterministic for the same inputs", () => {
-    expect(phantomTitle(123_456, 10, BASE)).toBe(phantomTitle(123_456, 10, BASE));
+  it("returns the base title while inactive", () => {
+    expect(phantomTitle(INITIAL_PHANTOM, BASE)).toBe(BASE);
   });
 
-  it("returns the base title when the multiplier is off", () => {
-    for (const elapsedMs of [0, QUIET_MS + 1_000, 10_000_000]) {
-      expect(phantomTitle(elapsedMs, 0, BASE)).toBe(BASE);
-    }
-  });
-
-  it("returns the base title during the quiet part of each cycle", () => {
-    expect(phantomTitle(0, 1, BASE)).toBe(BASE);
-    expect(phantomTitle(QUIET_MS - 1, 1, BASE)).toBe(BASE);
-    expect(phantomTitle(TITLE_PERIOD_MS + QUIET_MS - 1, 1, BASE)).toBe(BASE);
-  });
-
-  it("rotates through the phantom variants across active cycles", () => {
-    expect(phantomTitle(QUIET_MS + 1_000, 1, BASE)).toBe("RPS Chaos.");
-    expect(phantomTitle(TITLE_PERIOD_MS + QUIET_MS + 1_000, 1, BASE)).toBe("RPS chaos");
-    expect(phantomTitle(2 * TITLE_PERIOD_MS + QUIET_MS + 1_000, 1, BASE)).toBe("RPS Chaso");
-    expect(phantomTitle(3 * TITLE_PERIOD_MS + QUIET_MS + 1_000, 1, BASE)).toBe("RPS Chaos.");
-  });
-
-  it("cycles faster at higher multipliers", () => {
-    const elapsedMs = (QUIET_MS + 1_000) / 100;
-    expect(phantomTitle(elapsedMs, 100, BASE)).toBe("RPS Chaos.");
-    expect(phantomTitle(elapsedMs, 1, BASE)).toBe(BASE);
+  it("applies the active variant", () => {
+    expect(phantomTitle({ variant: 0, remainingMs: 1_000 }, BASE)).toBe("RPS Chaos.");
+    expect(phantomTitle({ variant: 1, remainingMs: 1_000 }, BASE)).toBe("RPS chaos");
+    expect(phantomTitle({ variant: 2, remainingMs: 1_000 }, BASE)).toBe("RPS Chaso");
   });
 });

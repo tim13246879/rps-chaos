@@ -1,6 +1,12 @@
-export const TITLE_PERIOD_MS = 45_000;
-// Fraction at the end of each cycle during which the phantom title shows.
-export const TITLE_ACTIVE_FRACTION = 0.2;
+export interface PhantomState {
+  variant: number | null;
+  remainingMs: number;
+}
+
+export const INITIAL_PHANTOM: PhantomState = { variant: null, remainingMs: 0 };
+
+export const PHANTOM_MEAN_INTERVAL_MS = 45_000;
+export const PHANTOM_DURATION_MS = 9_000;
 
 // Noticeable on a double take, but easy to second-guess after it reverts.
 const VARIANTS: ((base: string) => string)[] = [
@@ -9,15 +15,29 @@ const VARIANTS: ((base: string) => string)[] = [
   (base) => `${base.slice(0, -2)}${base.slice(-1)}${base.slice(-2, -1)}`,
 ];
 
-export function phantomTitle(elapsedMs: number, multiplier: number, base: string): string {
+export function stepPhantom(
+  state: PhantomState,
+  tickMs: number,
+  multiplier: number,
+  random: () => number,
+): PhantomState {
   if (multiplier <= 0) {
-    return base;
+    return INITIAL_PHANTOM;
   }
-  const periodMs = TITLE_PERIOD_MS / multiplier;
-  const cycle = Math.floor(elapsedMs / periodMs);
-  const phase = (elapsedMs % periodMs) / periodMs;
-  if (phase < 1 - TITLE_ACTIVE_FRACTION) {
-    return base;
+  if (state.variant !== null) {
+    const remainingMs = state.remainingMs - tickMs;
+    return remainingMs > 0 ? { ...state, remainingMs } : INITIAL_PHANTOM;
   }
-  return VARIANTS[cycle % VARIANTS.length](base);
+  const fireChance = (tickMs * multiplier) / PHANTOM_MEAN_INTERVAL_MS;
+  if (random() < fireChance) {
+    return {
+      variant: Math.floor(random() * VARIANTS.length),
+      remainingMs: PHANTOM_DURATION_MS / multiplier,
+    };
+  }
+  return state;
+}
+
+export function phantomTitle(state: PhantomState, base: string): string {
+  return state.variant === null ? base : VARIANTS[state.variant](base);
 }

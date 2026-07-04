@@ -2,87 +2,81 @@ import { describe, expect, it } from "vitest";
 import {
   BLUR_AMPLITUDE_PX,
   BLUR_MAX_PX,
-  BLUR_PERIOD_MS,
-  driftAt,
   effectiveMultiplier,
   HUE_AMPLITUDE_DEG,
-  HUE_PERIOD_MS,
+  INITIAL_DRIFT,
   nextChaosLevel,
   SCALE_AMPLITUDE,
   SCALE_MAX_DELTA,
-  SCALE_PERIOD_MS,
+  stepDrift,
   WARMTH_AMPLITUDE,
   WARMTH_MAX,
+  type DriftState,
 } from "../chaos/drift";
 
-describe("driftAt", () => {
-  it("is deterministic for the same inputs", () => {
-    expect(driftAt(123_456, 10)).toEqual(driftAt(123_456, 10));
+function sequenceRandom(values: number[]): () => number {
+  let index = 0;
+  return () => values[index++ % values.length];
+}
+
+function run(steps: number, multiplier: number, random: () => number): DriftState {
+  let state = INITIAL_DRIFT;
+  for (let i = 0; i < steps; i += 1) {
+    state = stepDrift(state, multiplier, random);
+  }
+  return state;
+}
+
+describe("stepDrift", () => {
+  it("is deterministic for the same random sequence", () => {
+    const values = [0.9, 0.1, 0.6, 0.3, 0.8];
+    expect(run(50, 10, sequenceRandom(values))).toEqual(run(50, 10, sequenceRandom(values)));
   });
 
-  it("produces zero drift when the multiplier is off", () => {
-    for (const elapsedMs of [0, 60_000, 10_000_000]) {
-      expect(driftAt(elapsedMs, 0)).toEqual({ hueDeg: 0, warmth: 0, blurPx: 0, scale: 1 });
+  it("snaps any state to zero drift when the multiplier is off", () => {
+    const displaced: DriftState = { hueDeg: 11, warmth: 0.04, blurPx: 0.19, scaleDelta: 0.003 };
+    expect(stepDrift(displaced, 0, () => 0.9)).toEqual(INITIAL_DRIFT);
+  });
+
+  it("stays within the 1x bounds under maximal positive steps", () => {
+    const state = run(10_000, 1, () => 1);
+    expect(state.hueDeg).toBeLessThanOrEqual(HUE_AMPLITUDE_DEG);
+    expect(state.warmth).toBeLessThanOrEqual(WARMTH_AMPLITUDE);
+    expect(state.blurPx).toBeLessThanOrEqual(BLUR_AMPLITUDE_PX);
+    expect(state.scaleDelta).toBeLessThanOrEqual(SCALE_AMPLITUDE);
+  });
+
+  it("clamps at the 100x maxima", () => {
+    const state = run(10_000, 100, () => 1);
+    expect(state.hueDeg).toBeLessThanOrEqual(180);
+    expect(state.warmth).toBeLessThanOrEqual(WARMTH_MAX);
+    expect(state.blurPx).toBeLessThanOrEqual(BLUR_MAX_PX);
+    expect(state.scaleDelta).toBeLessThanOrEqual(SCALE_MAX_DELTA);
+  });
+
+  it("keeps one-sided channels at zero and hue at its negative bound under minimal steps", () => {
+    const state = run(10_000, 1, () => 0);
+    expect(state.hueDeg).toBeCloseTo(-HUE_AMPLITUDE_DEG, 6);
+    expect(state.warmth).toBe(0);
+    expect(state.blurPx).toBe(0);
+    expect(state.scaleDelta).toBe(0);
+  });
+
+  it("reverts toward zero when displaced and the noise is neutral", () => {
+    let state: DriftState = { hueDeg: HUE_AMPLITUDE_DEG, warmth: WARMTH_AMPLITUDE, blurPx: 0, scaleDelta: 0 };
+    for (let i = 0; i < 20; i += 1) {
+      const next = stepDrift(state, 1, () => 0.5);
+      expect(Math.abs(next.hueDeg)).toBeLessThan(Math.abs(state.hueDeg));
+      expect(next.warmth).toBeLessThan(state.warmth);
+      state = next;
     }
   });
 
-  it("starts at zero drift when the epoch resets", () => {
-    for (const multiplier of [1, 10, 100]) {
-      const { hueDeg, warmth, blurPx, scale } = driftAt(0, multiplier);
-      expect(hueDeg).toBeCloseTo(0, 6);
-      expect(warmth).toBeCloseTo(0, 6);
-      expect(blurPx).toBeCloseTo(0, 6);
-      expect(scale).toBeCloseTo(1, 6);
-    }
-  });
-
-  it("scales hue amplitude with the multiplier and clamps at 180", () => {
-    for (const [multiplier, expected] of [
-      [1, HUE_AMPLITUDE_DEG],
-      [10, HUE_AMPLITUDE_DEG * 10],
-      [100, 180],
-    ]) {
-      const quarterPeriod = HUE_PERIOD_MS / (4 * multiplier);
-      expect(driftAt(quarterPeriod, multiplier).hueDeg).toBeCloseTo(expected, 4);
-    }
-  });
-
-  it("stays within the subtle bounds at 1x", () => {
-    for (let elapsedMs = 0; elapsedMs <= 600_000; elapsedMs += 5_000) {
-      const { hueDeg, warmth, blurPx, scale } = driftAt(elapsedMs, 1);
-      expect(Math.abs(hueDeg)).toBeLessThanOrEqual(HUE_AMPLITUDE_DEG);
-      expect(warmth).toBeGreaterThanOrEqual(0);
-      expect(warmth).toBeLessThanOrEqual(WARMTH_AMPLITUDE);
-      expect(blurPx).toBeGreaterThanOrEqual(0);
-      expect(blurPx).toBeLessThanOrEqual(BLUR_AMPLITUDE_PX);
-      expect(scale).toBeGreaterThanOrEqual(1);
-      expect(scale).toBeLessThanOrEqual(1 + SCALE_AMPLITUDE);
-    }
-  });
-
-  it("clamps warmth, blur, and scale at 100x", () => {
-    for (let elapsedMs = 0; elapsedMs <= 20_000; elapsedMs += 250) {
-      const { warmth, blurPx, scale } = driftAt(elapsedMs, 100);
-      expect(warmth).toBeGreaterThanOrEqual(0);
-      expect(warmth).toBeLessThanOrEqual(WARMTH_MAX);
-      expect(blurPx).toBeGreaterThanOrEqual(0);
-      expect(blurPx).toBeLessThanOrEqual(BLUR_MAX_PX);
-      expect(scale).toBeGreaterThanOrEqual(1);
-      expect(scale).toBeLessThanOrEqual(1 + SCALE_MAX_DELTA);
-    }
-  });
-
-  it("peaks blur and scale at the half period", () => {
-    const blurPeak = driftAt(BLUR_PERIOD_MS / 2, 1).blurPx;
-    expect(blurPeak).toBeCloseTo(BLUR_AMPLITUDE_PX, 4);
-    const scalePeak = driftAt(SCALE_PERIOD_MS / 2, 1).scale;
-    expect(scalePeak).toBeCloseTo(1 + SCALE_AMPLITUDE, 4);
-  });
-
-  it("oscillates back to zero after a full period", () => {
-    for (const multiplier of [1, 10, 100]) {
-      expect(driftAt(HUE_PERIOD_MS / multiplier, multiplier).hueDeg).toBeCloseTo(0, 4);
-    }
+  it("wanders under a varying random sequence", () => {
+    const random = sequenceRandom([0.9, 0.2, 0.7, 0.4]);
+    const first = stepDrift(INITIAL_DRIFT, 1, random);
+    const second = stepDrift(first, 1, random);
+    expect(second.hueDeg).not.toBe(first.hueDeg);
   });
 });
 
