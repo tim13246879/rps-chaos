@@ -5,9 +5,8 @@ import type { FrameFeatures, LandmarkPoint, PredictionResult } from "../types";
 import { classifySequence } from "./classifier";
 import { extractFrameFeatures } from "./landmarks";
 
-const WASM_PATH = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
-const HAND_MODEL_PATH =
-  "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task";
+const WASM_PATH = "/mediapipe/wasm";
+const HAND_MODEL_PATH = "/mediapipe/models/hand_landmarker.task";
 
 export interface VisionSnapshot {
   modelReady: boolean;
@@ -149,7 +148,9 @@ export function useHandVision() {
 
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
-    setSnapshot((current) => ({ ...current, cameraReady: false, handVisible: false }));
+    landmarkerRef.current?.close();
+    landmarkerRef.current = null;
+    setSnapshot((current) => ({ ...current, cameraReady: false, handVisible: false, modelReady: false }));
   }, []);
 
   const processFrame = useCallback(() => {
