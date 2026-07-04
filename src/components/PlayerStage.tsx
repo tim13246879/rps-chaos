@@ -1,4 +1,4 @@
-import type { RefObject } from "react";
+import type { Ref } from "react";
 import { MOVE_LABELS } from "../game/moves";
 import type { RoundClock } from "../game/round";
 import type { Move } from "../types";
@@ -7,8 +7,8 @@ import { CameraPanel } from "./CameraPanel";
 import { MoveGlyph } from "./MoveGlyph";
 
 interface PlayerStageProps {
-  videoRef: RefObject<HTMLVideoElement>;
-  canvasRef: RefObject<HTMLCanvasElement>;
+  videoRef: Ref<HTMLVideoElement>;
+  canvasRef: Ref<HTMLCanvasElement>;
   snapshot: VisionSnapshot;
   clock: RoundClock;
   computerMove: Move;

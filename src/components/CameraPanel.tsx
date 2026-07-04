@@ -1,10 +1,10 @@
-import type { RefObject } from "react";
+import type { Ref } from "react";
 import type { VisionSnapshot } from "../vision/useHandVision";
 import { formatPercent } from "../game/moves";
 
 interface CameraPanelProps {
-  videoRef: RefObject<HTMLVideoElement>;
-  canvasRef: RefObject<HTMLCanvasElement>;
+  videoRef: Ref<HTMLVideoElement>;
+  canvasRef: Ref<HTMLCanvasElement>;
   snapshot: VisionSnapshot;
   showMetrics?: boolean;
   showOverlay?: boolean;

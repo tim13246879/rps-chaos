@@ -32,6 +32,14 @@ const EMPTY_PREDICTION: PredictionResult = {
   stableFrames: 0,
 };
 
+async function playStreamOnVideo(video: HTMLVideoElement, stream: MediaStream): Promise<void> {
+  if (video.srcObject !== stream) {
+    video.srcObject = stream;
+  }
+
+  await video.play();
+}
+
 function drawLandmarks(
   canvas: HTMLCanvasElement,
   result: HandLandmarkerResult,
@@ -146,8 +154,8 @@ function getStartupErrorMessage(error: unknown): string {
 }
 
 export function useHandVision() {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const videoElementRef = useRef<HTMLVideoElement | null>(null);
+  const canvasElementRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const landmarkerRef = useRef<HandLandmarker | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -167,6 +175,23 @@ export function useHandVision() {
     calibratedAt: null,
   });
 
+  const videoRef = useCallback((video: HTMLVideoElement | null) => {
+    videoElementRef.current = video;
+
+    if (!video || !streamRef.current) {
+      return;
+    }
+
+    void playStreamOnVideo(video, streamRef.current).catch((error: unknown) => {
+      const message = getStartupErrorMessage(error);
+      setSnapshot((current) => ({ ...current, error: message, cameraReady: false }));
+    });
+  }, []);
+
+  const canvasRef = useCallback((canvas: HTMLCanvasElement | null) => {
+    canvasElementRef.current = canvas;
+  }, []);
+
   const stopCamera = useCallback(() => {
     if (rafRef.current !== null) {
       window.cancelAnimationFrame(rafRef.current);
@@ -175,14 +200,20 @@ export function useHandVision() {
 
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
+    videoElementRef.current?.pause();
+
+    if (videoElementRef.current) {
+      videoElementRef.current.srcObject = null;
+    }
+
     landmarkerRef.current?.close();
     landmarkerRef.current = null;
     setSnapshot((current) => ({ ...current, cameraReady: false, handVisible: false, modelReady: false }));
   }, []);
 
   const processFrame = useCallback(() => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
+    const video = videoElementRef.current;
+    const canvas = canvasElementRef.current;
     const landmarker = landmarkerRef.current;
 
     if (!video || !landmarker || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
@@ -270,14 +301,13 @@ export function useHandVision() {
       });
       streamRef.current = stream;
 
-      const video = videoRef.current;
+      const video = videoElementRef.current;
 
       if (!video) {
         throw new Error("Video element is not ready.");
       }
 
-      video.srcObject = stream;
-      await video.play();
+      await playStreamOnVideo(video, stream);
       setSnapshot((current) => ({ ...current, cameraReady: true, error: null }));
       rafRef.current = window.requestAnimationFrame(processFrame);
     } catch (error) {
