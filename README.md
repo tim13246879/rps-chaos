@@ -4,6 +4,8 @@ A browser-based rock-paper-scissors "oracle": it watches your webcam during a 3-
 
 Built for **Agents of Chaos**, a one-day hackathon in Vancouver: the chaos here is a game whose entire premise is "make an unpredictable choice" being read and countered before you've committed to it. Rock-paper-scissors only stays fair as long as no one can see your hand coming — this breaks that assumption on purpose, live, in front of you.
 
+🏆 Won a **Dishonorable Mention** at Agents of Chaos — for being too much fun and not enough "marketable."
+
 ## Run locally
 
 ```bash
